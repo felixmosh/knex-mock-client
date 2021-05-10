@@ -1,5 +1,5 @@
 import knex, { Knex } from 'knex';
-import { RawQuery } from '../types/knex';
+import { RawQuery } from '../types/mock-client';
 import { Tracker, TrackerConfig } from './Tracker';
 
 export class MockClient extends (knex as any).Client {

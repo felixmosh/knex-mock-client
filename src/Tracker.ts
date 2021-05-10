@@ -1,12 +1,12 @@
 import cloneDeep from 'lodash.clonedeep';
-import { RawQuery } from '../types/knex';
+import { FunctionQueryMatcher, QueryMatcher, RawQuery } from '../types/mock-client';
 import { queryMethods } from './constants';
 
 export type TrackerConfig = Record<string, unknown>;
 
 interface Handler<T = any> {
   data: T | ((rawQuery: RawQuery) => T);
-  match: (rawQuery: RawQuery) => boolean;
+  match: FunctionQueryMatcher;
   errorMessage?: string;
   once?: true;
 }
@@ -21,15 +21,14 @@ export class Tracker {
     update: [],
     delete: [],
   };
-  private readonly config: TrackerConfig;
-  private responses = new Map<RawQuery['method'], Handler[]>();
-
   public on = {
     select: this.prepareStatement('select'),
     insert: this.prepareStatement('insert'),
     update: this.prepareStatement('update'),
     delete: this.prepareStatement('delete'),
   };
+  private readonly config: TrackerConfig;
+  private responses = new Map<RawQuery['method'], Handler[]>();
 
   constructor(trackerConfig: TrackerConfig) {
     this.config = trackerConfig;
@@ -77,7 +76,7 @@ export class Tracker {
     queryMethods.forEach((method) => (this.history[method].length = 0));
   }
 
-  private prepareMatcher(rawQueryMatcher: string | RegExp | Handler['match']): Handler['match'] {
+  private prepareMatcher(rawQueryMatcher: QueryMatcher): Handler['match'] {
     if (typeof rawQueryMatcher === 'string' && rawQueryMatcher) {
       return (rawQuery: RawQuery) => rawQuery.sql.includes(rawQueryMatcher);
     } else if (rawQueryMatcher instanceof RegExp) {
