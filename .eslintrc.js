@@ -1,12 +1,6 @@
 module.exports = {
   parser: '@typescript-eslint/parser',
-  extends: [
-    'eslint:recommended',
-    'plugin:react/recommended',
-    'plugin:@typescript-eslint/recommended',
-    'prettier',
-    'plugin:prettier/recommended',
-  ],
+  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'prettier'],
   env: {
     node: true,
     es6: true,
@@ -37,5 +31,5 @@ module.exports = {
     'no-unused-vars': 0,
     'no-extra-boolean-cast': 0,
     'no-console': ['error', { allow: ['warn', 'error'] }],
-  }
+  },
 };
