@@ -25,8 +25,23 @@ export class MockClient extends (knex as any).Client {
   }
 
   public _query(_connection: any, rawQuery: RawQuery) {
-    // @ts-ignore
-    rawQuery.method = rawQuery.method === 'del' ? 'delete' : rawQuery.method;
+    let method: RawQuery['method'] = rawQuery.method;
+
+    const rawMethod = rawQuery.method as RawQuery['method'] | 'del' | 'first' | 'pluck' | 'raw';
+    switch (rawMethod) {
+      case 'first':
+      case 'pluck':
+        method = 'select';
+        break;
+      case 'del':
+        method = 'delete';
+        break;
+      case 'raw':
+        method = rawQuery.sql.toLowerCase().trim().split(' ').shift() as RawQuery['method'];
+        break;
+    }
+
+    rawQuery.method = method;
     return MockClient.tracker._handle(rawQuery);
   }
 }

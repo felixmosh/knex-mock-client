@@ -162,4 +162,28 @@ describe('mock Select statement', () => {
       message: expect.stringContaining('No mock handler found'),
     });
   });
+
+  it('should support `first` query', async () => {
+    tracker.on.select('table_name').response([]);
+
+    await db('table_name').first();
+
+    expect(tracker.history.select).toHaveLength(1);
+  });
+
+  it('should support `pluck` query', async () => {
+    tracker.on.select('table_name').response([]);
+
+    await db('table_name').pluck('id');
+
+    expect(tracker.history.select).toHaveLength(1);
+  });
+
+  it('should support `raw` select statement', async () => {
+    tracker.on.select('table_name').response([]);
+
+    await db.raw('Select * from ??', ['table_name']);
+
+    expect(tracker.history.select).toHaveLength(1);
+  });
 });

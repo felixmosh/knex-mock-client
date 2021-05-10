@@ -148,4 +148,12 @@ describe('mock Delete statement', () => {
       message: expect.stringContaining('No mock handler found'),
     });
   });
+
+  it('should support `raw` delete statement', async () => {
+    tracker.on.delete('table_name').response([]);
+
+    await db.raw('Delete from ?? where id=?', ['table_name', faker.datatype.number({ min: 1 })]);
+
+    expect(tracker.history.delete).toHaveLength(1);
+  });
 });

@@ -11,22 +11,28 @@ interface Handler<T = any> {
   once?: true;
 }
 
+type ResponseTypes = {
+  response: <T = any>(data: Handler<T>['data']) => Tracker;
+  responseOnce: <T = any>(data: Handler<T>['data']) => Tracker;
+  simulateError: (data: Handler<any>['data']) => Tracker;
+  simulateErrorOnce: (data: Handler<any>['data']) => Tracker;
+};
+
 type QueryMethodType = typeof queryMethods[number];
 type History = Record<QueryMethodType, RawQuery[]>;
+type On = Record<QueryMethodType, (rawQueryMatcher: QueryMatcher) => ResponseTypes>;
 
 export class Tracker {
-  public readonly history: History = {
-    select: [],
-    insert: [],
-    update: [],
-    delete: [],
-  };
-  public on = {
-    select: this.prepareStatement('select'),
-    insert: this.prepareStatement('insert'),
-    update: this.prepareStatement('update'),
-    delete: this.prepareStatement('delete'),
-  };
+  public readonly history: History = queryMethods.reduce((result, method) => {
+    result[method] = [];
+    return result;
+  }, {} as History);
+
+  public on = queryMethods.reduce((result, method) => {
+    result[method] = this.prepareStatement(method);
+    return result;
+  }, {} as On);
+
   private readonly config: TrackerConfig;
   private responses = new Map<RawQuery['method'], Handler[]>();
 
@@ -89,7 +95,7 @@ export class Tracker {
   }
 
   private prepareStatement(queryMethod: QueryMethodType) {
-    return (rawQueryMatcher: string | RegExp | Handler['match']) => {
+    return (rawQueryMatcher: QueryMatcher): ResponseTypes => {
       const matcher = this.prepareMatcher(rawQueryMatcher);
       return {
         response: <T = any>(data: Handler<T>['data']): Tracker => {
@@ -107,11 +113,13 @@ export class Tracker {
         simulateError: (errorMessage: Handler['errorMessage']): Tracker => {
           const handlers = this.responses.get(queryMethod) || [];
           handlers.push({ match: matcher, data: null, errorMessage });
+
           return this;
         },
         simulateErrorOnce: (errorMessage: Handler['errorMessage']): Tracker => {
           const handlers = this.responses.get(queryMethod) || [];
           handlers.push({ match: matcher, data: null, once: true, errorMessage });
+
           return this;
         },
       };

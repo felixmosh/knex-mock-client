@@ -101,9 +101,9 @@ describe('mock Insert statement', () => {
 
     expect(data).toEqual(insertId);
 
-    await expect(
-      db('table_name').insert([{ name: faker.name.firstName() }])
-    ).rejects.toMatchObject({ message: expect.stringContaining('No mock handler found') });
+    await expect(db('table_name').insert([{ name: faker.name.firstName() }])).rejects.toMatchObject(
+      { message: expect.stringContaining('No mock handler found') }
+    );
   });
 
   it('should collect call history by method', async () => {
@@ -156,5 +156,16 @@ describe('mock Insert statement', () => {
         message: expect.stringContaining('No mock handler found'),
       }
     );
+  });
+
+  it('should support `raw` insert statement', async () => {
+    tracker.on.insert('table_name').response([]);
+
+    await db.raw('Insert into ?? (id) values (?)', [
+      'table_name',
+      faker.datatype.number({ min: 1 }),
+    ]);
+
+    expect(tracker.history.insert).toHaveLength(1);
   });
 });

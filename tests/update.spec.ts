@@ -18,7 +18,7 @@ describe('mock Update statement', () => {
     tracker.reset();
   });
 
-  it('should allow to mock insert query using string matcher', async () => {
+  it('should allow to mock update query using string matcher', async () => {
     const affectedRows = faker.datatype.number();
     tracker.on.update('table_name').response(affectedRows);
 
@@ -27,7 +27,7 @@ describe('mock Update statement', () => {
     expect(data).toEqual(affectedRows);
   });
 
-  it('should allow to mock insert query using regex matcher', async () => {
+  it('should allow to mock update query using regex matcher', async () => {
     const affectedRows = faker.datatype.number();
     tracker.on.update(/table_name/).response(affectedRows);
 
@@ -36,7 +36,7 @@ describe('mock Update statement', () => {
     expect(data).toEqual(affectedRows);
   });
 
-  it('should allow to mock insert query using custom matcher', async () => {
+  it('should allow to mock update query using custom matcher', async () => {
     const affectedRows = faker.datatype.number();
     tracker.on
       .update((rawQuery) => rawQuery.method === 'update' && rawQuery.sql.includes('table_name'))
@@ -90,7 +90,7 @@ describe('mock Update statement', () => {
     expect(data2).toEqual(affectedRows);
   });
 
-  it('should allow to mock insert query once', async () => {
+  it('should allow to mock update query once', async () => {
     const affectedRows = faker.datatype.number();
 
     tracker.on
@@ -101,9 +101,9 @@ describe('mock Update statement', () => {
 
     expect(data).toEqual(affectedRows);
 
-    await expect(
-      db('table_name').update([{ name: faker.name.firstName() }])
-    ).rejects.toMatchObject({ message: expect.stringContaining('No mock handler found') });
+    await expect(db('table_name').update([{ name: faker.name.firstName() }])).rejects.toMatchObject(
+      { message: expect.stringContaining('No mock handler found') }
+    );
   });
 
   it('should collect call history by method', async () => {
@@ -157,5 +157,17 @@ describe('mock Update statement', () => {
         message: expect.stringContaining('No mock handler found'),
       }
     );
+  });
+
+  it('should support `raw` update statement', async () => {
+    tracker.on.update('table_name').response([]);
+
+    await db.raw('Update ?? set name=?? where id=?', [
+      'table_name',
+      faker.name.firstName(),
+      faker.datatype.number({ min: 1 }),
+    ]);
+
+    expect(tracker.history.update).toHaveLength(1);
   });
 });
