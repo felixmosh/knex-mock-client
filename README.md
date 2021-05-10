@@ -22,7 +22,7 @@ yarn add --dev knex-mock-client
 
 ## Example
 
-Mocking a `insert` statement
+Mocking an `insert` statement
 
 ```ts
 // my-coll-controller.ts
