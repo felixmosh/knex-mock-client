@@ -16,6 +16,12 @@ describe('common behaviour', () => {
     beforeAll(() => {
       db = knex({
         client: MockClient as any,
+        connection: {
+          host: 'HOST',
+          user: 'USER',
+          password: 'PASSWORD',
+          database: 'DBNAME',
+        },
       });
       tracker = getTracker();
     });

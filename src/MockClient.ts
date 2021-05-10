@@ -30,7 +30,3 @@ export class MockClient extends (knex as any).Client {
     return MockClient.tracker._handle(rawQuery);
   }
 }
-
-Object.assign(MockClient.prototype, {
-  driverName: MockClient.name,
-});
