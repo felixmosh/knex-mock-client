@@ -2,12 +2,13 @@
   "name": "knex-mock-client",
   "version": "1.0.0",
   "description": "A mock client for knex which allows you to write tests with DB interactions",
-  "main": "dist/index.js",
-  "author": "felixmosh",
   "license": "MIT",
-  "engines": {
-    "node": ">=12"
-  },
+  "author": "felixmosh",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "types"
+  ],
   "scripts": {
     "start": "ts-node-dev src/index.ts",
     "build": "rm -rf dist && tsc",
@@ -15,6 +16,15 @@
     "version": "auto-changelog -p && git add CHANGELOG.md",
     "release": "release-it",
     "prepare": "npm run build"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "prettier --write",
+      "eslint --fix"
+    ]
+  },
+  "dependencies": {
+    "lodash.clonedeep": "^4.5.0"
   },
   "devDependencies": {
     "@types/faker": "^5.5.3",
@@ -36,11 +46,8 @@
     "ts-node-dev": "^1.1.6",
     "typescript": "^4.2.4"
   },
-  "lint-staged": {
-    "*.ts": [
-      "prettier --write",
-      "eslint --fix"
-    ]
+  "engines": {
+    "node": ">=12"
   },
   "release-it": {
     "git": {
@@ -52,8 +59,5 @@
     "github": {
       "release": true
     }
-  },
-  "dependencies": {
-    "lodash.clonedeep": "^4.5.0"
   }
 }
