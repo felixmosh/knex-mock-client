@@ -1,0 +1,59 @@
+{
+  "name": "knex-mock-client",
+  "version": "1.0.0",
+  "description": "A mock client for knex which allows you to write tests with DB interactions",
+  "main": "dist/index.js",
+  "author": "felixmosh",
+  "license": "MIT",
+  "engines": {
+    "node": ">=12"
+  },
+  "scripts": {
+    "start": "ts-node-dev src/index.ts",
+    "build": "rm -rf dist && tsc",
+    "test": "jest test",
+    "version": "auto-changelog -p && git add CHANGELOG.md",
+    "release": "release-it",
+    "prepare": "npm run build"
+  },
+  "devDependencies": {
+    "@types/faker": "^5.5.3",
+    "@types/jest": "^26.0.23",
+    "@types/lodash.clonedeep": "^4.5.6",
+    "@types/node": "^15.0.2",
+    "@typescript-eslint/parser": "^4.22.1",
+    "auto-changelog": "^2.2.1",
+    "eslint": "^7.25.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "faker": "^5.5.3",
+    "husky": "^6.0.0",
+    "jest": "^26.6.3",
+    "knex": "^0.95.4",
+    "lint-staged": "^10.5.4",
+    "prettier": "^2.2.1",
+    "ts-jest": "^26.5.6",
+    "ts-node-dev": "^1.1.6",
+    "typescript": "^4.2.4"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "prettier --write",
+      "eslint --fix"
+    ]
+  },
+  "release-it": {
+    "git": {
+      "changelog": "npx auto-changelog --stdout --commit-limit false -u --template https://raw.githubusercontent.com/release-it/release-it/master/templates/changelog-compact.hbs"
+    },
+    "hooks": {
+      "after:bump": "npx auto-changelog -p"
+    },
+    "github": {
+      "release": true
+    }
+  },
+  "dependencies": {
+    "lodash.clonedeep": "^4.5.0"
+  }
+}
