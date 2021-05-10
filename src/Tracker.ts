@@ -2,7 +2,7 @@ import cloneDeep from 'lodash.clonedeep';
 import { RawQuery } from '../types/knex';
 import { queryMethods } from './constants';
 
-export interface TrackerConfig {}
+export type TrackerConfig = Record<string, unknown>;
 
 interface Handler<T = any> {
   data: T | ((rawQuery: RawQuery) => T);
