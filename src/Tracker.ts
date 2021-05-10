@@ -4,8 +4,8 @@ import { queryMethods } from './constants';
 
 export interface TrackerConfig {}
 
-interface Handler {
-  data: any | ((rawQuery: RawQuery) => any);
+interface Handler<T = any> {
+  data: T | ((rawQuery: RawQuery) => T);
   match: (rawQuery: RawQuery) => boolean;
   errorMessage?: string;
   once?: true;
@@ -93,13 +93,13 @@ export class Tracker {
     return (rawQueryMatcher: string | RegExp | Handler['match']) => {
       const matcher = this.prepareMatcher(rawQueryMatcher);
       return {
-        response: (data: Handler['data']): Tracker => {
+        response: <T = any>(data: Handler<T>['data']): Tracker => {
           const handlers = this.responses.get(queryMethod) || [];
           handlers.push({ match: matcher, data });
 
           return this;
         },
-        responseOnce: (data: Handler['data']): Tracker => {
+        responseOnce: <T = any>(data: Handler<T>['data']): Tracker => {
           const handlers = this.responses.get(queryMethod) || [];
           handlers.push({ match: matcher, data, once: true });
 
