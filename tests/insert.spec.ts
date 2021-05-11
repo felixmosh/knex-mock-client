@@ -1,4 +1,4 @@
-import faker from 'faker';
+import * as faker from 'faker';
 import knex, { Knex } from 'knex';
 import { getTracker, MockClient } from '../src';
 import { Tracker } from '../src/Tracker';
@@ -191,5 +191,18 @@ describe('mock Insert statement', () => {
 
     expect(tracker.history.insert).toHaveLength(1);
     expect(data).toEqual(3);
+  });
+
+  it('should support transactions', async () => {
+    tracker.on.insert('table_name').responseOnce(1);
+    tracker.on.delete('table_name').responseOnce(1);
+
+    await db.transaction(async (trx) => {
+      await db('table_name').insert({ name: faker.name.firstName() }).transacting(trx);
+      await db('table_name').delete().where({ name: faker.name.firstName() }).transacting(trx);
+    });
+
+    expect(tracker.history.insert).toHaveLength(1);
+    expect(tracker.history.delete).toHaveLength(1);
   });
 });

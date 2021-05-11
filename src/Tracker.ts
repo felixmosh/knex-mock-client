@@ -1,6 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
 import { FunctionQueryMatcher, QueryMatcher, RawQuery } from '../types/mock-client';
-import { queryMethods } from './constants';
+import { queryMethods, transactionCommands } from './constants';
 
 export type TrackerConfig = Record<string, unknown>;
 
@@ -44,6 +44,10 @@ export class Tracker {
   public _handle(rawQuery: RawQuery): Promise<any> {
     return new Promise((resolve, reject) => {
       setTimeout(async () => {
+        if (typeof rawQuery.method === 'undefined' && transactionCommands.includes(rawQuery.sql)) {
+          resolve(undefined);
+        }
+
         const handlers = this.responses.get(rawQuery.method) || [];
         for (let i = 0; i < handlers.length; i++) {
           const handler = handlers[i];
