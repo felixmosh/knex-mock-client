@@ -2,6 +2,14 @@
   "name": "knex-mock-client",
   "version": "1.2.0",
   "description": "A mock client for knex which allows you to write tests with DB interactions",
+  "homepage": "https://github.com/felixmosh/knex-mock-client#readme",
+  "bugs": {
+    "url": "https://github.com/felixmosh/knex-mock-client/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/felixmosh/knex-mock-client.git"
+  },
   "license": "MIT",
   "author": "felixmosh",
   "main": "dist/index.js",
