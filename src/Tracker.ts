@@ -43,7 +43,7 @@ export class Tracker {
 
   public _handle(rawQuery: RawQuery): Promise<any> {
     return new Promise((resolve, reject) => {
-      setTimeout(() => {
+      setTimeout(async () => {
         const handlers = this.responses.get(rawQuery.method) || [];
         for (let i = 0; i < handlers.length; i++) {
           const handler = handlers[i];
@@ -54,7 +54,9 @@ export class Tracker {
             if (handler.errorMessage) {
               reject(new Error(handler.errorMessage));
             } else {
-              resolve(cloneDeep(handler.data));
+              const data =
+                typeof handler.data === 'function' ? await handler.data(rawQuery) : handler.data;
+              resolve(cloneDeep(data));
             }
 
             if (handler.once) {

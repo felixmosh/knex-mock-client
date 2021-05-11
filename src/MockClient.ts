@@ -41,7 +41,6 @@ export class MockClient extends (knex as any).Client {
         break;
     }
 
-    rawQuery.method = method;
-    return MockClient.tracker._handle(rawQuery);
+    return MockClient.tracker._handle({ ...rawQuery, method });
   }
 }

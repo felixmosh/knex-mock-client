@@ -170,4 +170,28 @@ describe('mock Update statement', () => {
 
     expect(tracker.history.update).toHaveLength(1);
   });
+
+  it('should support response as a function', async () => {
+    tracker.on.update('table_name').response(() => 2);
+
+    const data = await db('table_name').update({ name: faker.name.firstName() });
+
+    expect(tracker.history.update).toHaveLength(1);
+    expect(data).toEqual(2);
+  });
+
+  it('should support an async response as a function', async () => {
+    tracker.on.update('table_name').response(async () => {
+      return new Promise((resolve) =>
+        setTimeout(() => {
+          resolve(3);
+        }, 0)
+      );
+    });
+
+    const data = await db('table_name').update({ name: faker.name.firstName() });
+
+    expect(tracker.history.update).toHaveLength(1);
+    expect(data).toEqual(3);
+  });
 });

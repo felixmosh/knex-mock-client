@@ -156,4 +156,28 @@ describe('mock Delete statement', () => {
 
     expect(tracker.history.delete).toHaveLength(1);
   });
+
+  it('should support response as a function', async () => {
+    tracker.on.delete('table_name').response(() => 2);
+
+    const data = await db('table_name').delete().where('table', 'table_name');
+
+    expect(tracker.history.delete).toHaveLength(1);
+    expect(data).toEqual(2);
+  });
+
+  it('should support an async response as a function', async () => {
+    tracker.on.delete('table_name').response(async () => {
+      return new Promise((resolve) =>
+        setTimeout(() => {
+          resolve(3);
+        }, 0)
+      );
+    });
+
+    const data = await db('table_name').delete().where('table', 'table_name');
+
+    expect(tracker.history.delete).toHaveLength(1);
+    expect(data).toEqual(3);
+  });
 });

@@ -186,4 +186,32 @@ describe('mock Select statement', () => {
 
     expect(tracker.history.select).toHaveLength(1);
   });
+
+  it('should support response as a function', async () => {
+    tracker.on.select('table_name').response((q) => ({
+      table: q.bindings[0],
+    }));
+
+    const data = await db('table_name').where('table', 'table_name');
+
+    expect(tracker.history.select).toHaveLength(1);
+    expect(data).toEqual({ table: 'table_name' });
+  });
+
+  it('should support an async response as a function', async () => {
+    tracker.on.select('table_name').response(async (q) => {
+      return new Promise((resolve) =>
+        setTimeout(() => {
+          resolve({
+            table: q.bindings[0],
+          });
+        }, 0)
+      );
+    });
+
+    const data = await db('table_name').where('table', 'table_name');
+
+    expect(tracker.history.select).toHaveLength(1);
+    expect(data).toEqual({ table: 'table_name' });
+  });
 });
