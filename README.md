@@ -25,7 +25,7 @@ yarn add --dev knex-mock-client
 Mocking an `insert` statement
 
 ```ts
-// my-coll-controller.ts
+// my-cool-controller.ts
 import { db } from '../common/db-setup';
 
 export async function addUser(user: User): Promise<{ id }> {
