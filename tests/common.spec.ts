@@ -15,7 +15,7 @@ describe('common behaviour', () => {
 
     beforeAll(() => {
       db = knex({
-        client: MockClient as any,
+        client: MockClient,
         connection: {
           host: 'HOST',
           user: 'USER',

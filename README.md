@@ -47,7 +47,7 @@ describe('my-cool-controller tests', () => {
 
   beforeAll(() => {
     db = knex({
-      client: MockClient as any,
+      client: MockClient,
     });
     tracker = getTracker();
   });

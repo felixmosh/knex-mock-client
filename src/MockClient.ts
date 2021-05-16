@@ -2,7 +2,7 @@ import knex, { Knex } from 'knex';
 import { RawQuery } from '../types/mock-client';
 import { Tracker, TrackerConfig } from './Tracker';
 
-export class MockClient extends (knex as any).Client {
+export class MockClient extends knex.Client {
   static tracker: Tracker;
   public readonly isMock = true;
 

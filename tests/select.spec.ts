@@ -9,7 +9,7 @@ describe('mock Select statement', () => {
 
   beforeAll(() => {
     db = knex({
-      client: MockClient as any,
+      client: MockClient,
     });
     tracker = getTracker();
   });
