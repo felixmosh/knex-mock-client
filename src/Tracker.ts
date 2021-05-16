@@ -45,7 +45,7 @@ export class Tracker {
     return new Promise((resolve, reject) => {
       setTimeout(async () => {
         if (typeof rawQuery.method === 'undefined' && transactionCommands.includes(rawQuery.sql)) {
-          resolve(undefined);
+          return resolve(undefined);
         }
 
         const handlers = this.responses.get(rawQuery.method) || [];

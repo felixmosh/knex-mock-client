@@ -1,8 +1,7 @@
 import faker from 'faker';
 import knex, { Knex } from 'knex';
-import { getTracker, MockClient } from '../src';
+import { getTracker, MockClient, Tracker } from '../src';
 import { queryMethods } from '../src/constants';
-import { Tracker } from '../src/Tracker';
 
 describe('common behaviour', () => {
   it('should errorMessage error when accessing tracker before initialization', async () => {

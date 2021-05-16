@@ -1,7 +1,6 @@
 import faker from 'faker';
 import knex, { Knex } from 'knex';
-import { getTracker, MockClient } from '../src';
-import { Tracker } from '../src/Tracker';
+import { getTracker, MockClient, Tracker } from '../src';
 
 describe('mock Select statement', () => {
   let db: Knex;
