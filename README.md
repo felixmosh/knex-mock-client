@@ -40,15 +40,16 @@ export async function addUser(user: User): Promise<{ id }> {
 import { expect } from '@jest/globals';
 import knex, { Knex } from 'knex';
 import { getTracker, MockClient } from 'knex-mock-client';
+import faker from 'faker';
+
+jest.mock('../common/db-setup', () => {
+  return knex({ client: MockClient });
+});
 
 describe('my-cool-controller tests', () => {
-  let db: Knex;
   let tracker: Tracker;
 
   beforeAll(() => {
-    db = knex({
-      client: MockClient,
-    });
     tracker = getTracker();
   });
 
