@@ -43,7 +43,9 @@ import { getTracker, MockClient } from 'knex-mock-client';
 import faker from 'faker';
 
 jest.mock('../common/db-setup', () => {
-  return knex({ client: MockClient });
+  return {
+    db: knex({ client: MockClient })
+  };
 });
 
 describe('my-cool-controller tests', () => {
@@ -93,7 +95,7 @@ Each one of `on` methods (`select`, `insert`,`update`, `delete`) are accepting a
    tracker.on
      .insert(
        ({ method, sql, bindings }: RawQuery) =>
-         method === 'delete' && /^insert into users/.test(sql) && bindings.includes('secret-token')
+         method === 'insert' && /^insert into `users`/.test(sql) && bindings.includes('secret-token')
      )
      .response([]);
    ```
