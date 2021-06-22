@@ -23,7 +23,7 @@
     "lint": "eslint {src,tests,types}/**/*.ts",
     "test": "jest test",
     "version": "auto-changelog -p && git add CHANGELOG.md",
-    "release": "release-it",
+    "release": "release-it --only-version",
     "prepare": "npm run build"
   },
   "lint-staged": {
