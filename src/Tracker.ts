@@ -1,6 +1,8 @@
+import { Knex } from 'knex';
 import cloneDeep from 'lodash.clonedeep';
 import { FunctionQueryMatcher, QueryMatcher, RawQuery } from '../types/mock-client';
 import { queryMethods, transactionCommands } from './constants';
+import Raw = Knex.Raw;
 
 export type TrackerConfig = Record<string, unknown>;
 
@@ -48,25 +50,29 @@ export class Tracker {
           return resolve(undefined);
         }
 
-        const handlers = this.responses.get(rawQuery.method) || [];
-        for (let i = 0; i < handlers.length; i++) {
-          const handler = handlers[i];
+        const possiableMethods: RawQuery['method'][] = [rawQuery.method, 'any'];
+        for (const method of possiableMethods) {
+          const handlers: Handler[] = this.responses.get(method) || [];
 
-          if (handler.match(rawQuery)) {
-            this.history[rawQuery.method].push(rawQuery);
+          for (let i = 0; i < handlers.length; i++) {
+            const handler = handlers[i];
 
-            if (handler.errorMessage) {
-              reject(new Error(handler.errorMessage));
-            } else {
-              const data =
-                typeof handler.data === 'function' ? await handler.data(rawQuery) : handler.data;
-              resolve(cloneDeep(data));
+            if (handler.match(rawQuery)) {
+              this.history[method].push(rawQuery);
+
+              if (handler.errorMessage) {
+                reject(new Error(handler.errorMessage));
+              } else {
+                const data =
+                  typeof handler.data === 'function' ? await handler.data(rawQuery) : handler.data;
+                resolve(cloneDeep(data));
+              }
+
+              if (handler.once) {
+                handlers.splice(i, 1);
+              }
+              return;
             }
-
-            if (handler.once) {
-              handlers.splice(i, 1);
-            }
-            return;
           }
         }
 

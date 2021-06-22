@@ -1,5 +1,5 @@
 export interface RawQuery {
-  method: 'select' | 'insert' | 'update' | 'delete';
+  method: 'select' | 'insert' | 'update' | 'delete' | 'any';
   sql: string;
   bindings: any[];
   options: Record<string, any>;
