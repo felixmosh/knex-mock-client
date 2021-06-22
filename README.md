@@ -76,7 +76,7 @@ describe('my-cool-controller tests', () => {
 });
 ```
 
-Each one of `on` methods (`select`, `insert`,`update`, `delete`) are accepting a query matcher.
+Each one of `on` methods (`select`, `insert`,`update`, `delete`, `any`) are accepting a query matcher.
 <br>There are 3 kind of matchers:
 
 1. `String` - will match part of the given `sql` using `String.includes`
