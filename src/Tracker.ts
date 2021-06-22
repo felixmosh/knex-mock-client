@@ -1,8 +1,6 @@
-import { Knex } from 'knex';
 import cloneDeep from 'lodash.clonedeep';
 import { FunctionQueryMatcher, QueryMatcher, RawQuery } from '../types/mock-client';
 import { queryMethods, transactionCommands } from './constants';
-import Raw = Knex.Raw;
 
 export type TrackerConfig = Record<string, unknown>;
 
