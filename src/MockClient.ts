@@ -31,6 +31,7 @@ export class MockClient extends knex.Client {
     switch (rawMethod) {
       case 'first':
       case 'pluck':
+        rawQuery.postOp = rawMethod;
         method = 'select';
         break;
       case 'del':

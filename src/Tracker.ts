@@ -63,7 +63,7 @@ export class Tracker {
               } else {
                 const data =
                   typeof handler.data === 'function' ? await handler.data(rawQuery) : handler.data;
-                resolve(cloneDeep(data));
+                resolve(cloneDeep(Tracker.applyPostOp(data, rawQuery)));
               }
 
               if (handler.once) {
@@ -134,5 +134,14 @@ export class Tracker {
         },
       };
     };
+  }
+
+  private static applyPostOp(data: any, rawQuery: RawQuery) {
+    if (rawQuery.postOp === 'first' && Array.isArray(data)) {
+      return data[0];
+    } else if (rawQuery.postOp === 'pluck' && rawQuery.pluck && Array.isArray(data)) {
+      return data.map((item) => item[rawQuery.pluck as string]);
+    }
+    return data;
   }
 }
