@@ -163,19 +163,33 @@ describe('mock Select statement', () => {
   });
 
   it('should support `first` query', async () => {
-    tracker.on.select('table_name').response([]);
+    const data = [
+      { id: faker.datatype.number({ min: 1 }) },
+      { id: faker.datatype.number({ min: 1 }) },
+    ];
 
-    await db('table_name').first();
+    tracker.on.select('table_name').response(data);
 
-    expect(tracker.history.select).toHaveLength(1);
+    const firstValue = await db('table_name').first();
+    const allValues = await db('table_name');
+
+    expect(tracker.history.select).toHaveLength(2);
+    expect(firstValue).toEqual(data[0]);
+    expect(allValues).toEqual(data);
   });
 
   it('should support `pluck` query', async () => {
-    tracker.on.select('table_name').response([]);
+    const data = [
+      { id: faker.datatype.number({ min: 1 }) },
+      { id: faker.datatype.number({ min: 1 }) },
+    ];
 
-    await db('table_name').pluck('id');
+    tracker.on.select('table_name').response(data);
+
+    const values = await db('table_name').pluck('id');
 
     expect(tracker.history.select).toHaveLength(1);
+    expect(values).toEqual(data.map(({ id }) => id));
   });
 
   it('should support `raw` select statement', async () => {
