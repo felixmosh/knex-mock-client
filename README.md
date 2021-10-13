@@ -62,6 +62,7 @@ describe('my-cool-controller tests', () => {
   it('should add new user', async () => {
     const insertId = faker.datatype.number();
     tracker.on.insert('users').response([insertId]);
+    
     const newUser = { name: 'foo bar', email: 'test@test.com' };
     const data = await addUser(newUser);
 
@@ -145,6 +146,23 @@ interface RawQuery {
   __knexQueryUid: string;
   queryContext: any;
 }
+```
+
+## Specific dialects
+
+Some DB's (like postgress) has specific dialects, for the mockClient build the proper query you must pass the `dialect` property.
+
+```ts
+
+db = knex({
+  client: MockClient,
+  dialect: 'pg', // can be any Knex valid dialect name.
+});
+
+const givenData = [{ id: faker.datatype.number() }];
+tracker.on.select('table_name').response(givenData);
+
+const data = await db('table_name').distinctOn('age');
 ```
 
 You can reset all history calls by calling `tracker.resetHistory()`.
