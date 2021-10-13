@@ -222,4 +222,22 @@ describe('mock Insert statement', () => {
     expect(tracker.history.insert).toHaveLength(1);
     expect(tracker.history.delete).toHaveLength(1);
   });
+
+  it('should support nested transactions', async () => {
+    tracker.on.insert('table_name').responseOnce(1);
+    tracker.on.delete('table_name').responseOnce(1);
+
+    await db.transaction(async (trx) => {
+      await db('table_name').insert({ name: faker.name.firstName() }).transacting(trx);
+      await trx.transaction(async (innerTrx) => {
+        await db('table_name')
+          .delete()
+          .where({ name: faker.name.firstName() })
+          .transacting(innerTrx);
+      });
+    });
+
+    expect(tracker.history.insert).toHaveLength(1);
+    expect(tracker.history.delete).toHaveLength(1);
+  });
 });

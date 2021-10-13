@@ -44,7 +44,10 @@ export class Tracker {
   public _handle(rawQuery: RawQuery): Promise<any> {
     return new Promise((resolve, reject) => {
       setTimeout(async () => {
-        if (typeof rawQuery.method === 'undefined' && transactionCommands.includes(rawQuery.sql)) {
+        if (
+          typeof rawQuery.method === 'undefined' &&
+          transactionCommands.some((trxCommand) => rawQuery.sql.startsWith(trxCommand))
+        ) {
           return resolve(undefined);
         }
 
