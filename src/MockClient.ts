@@ -10,6 +10,10 @@ export class MockClient extends knex.Client {
     super(config);
 
     MockClient.tracker = new Tracker(config.mockClient);
+
+    if (config.dialect) {
+      this._attachDialectQueryCompiler(config);
+    }
   }
 
   public acquireConnection() {
@@ -43,5 +47,21 @@ export class MockClient extends knex.Client {
     }
 
     return MockClient.tracker._handle({ ...rawQuery, method });
+  }
+
+  private _attachDialectQueryCompiler(config: Knex.Config<any> & { mockClient: TrackerConfig }) {
+    const { resolveClientNameWithAliases } = require('knex/lib/util/helpers');
+    const { SUPPORTED_CLIENTS } = require('knex/lib/constants');
+
+    if (!SUPPORTED_CLIENTS.includes(config.dialect)) {
+      throw new Error(
+        `knex-mock-client: Unknown configuration option 'dialect' value ${config.dialect}.\nNote that it is case-sensitive, check documentation for supported values.`
+      );
+    }
+
+    const resolvedClientName = resolveClientNameWithAliases(config.dialect);
+    const Dialect = require(`knex/lib/dialects/${resolvedClientName}/index.js`);
+    const dialect = new Dialect(config);
+    this.queryCompiler = dialect.queryCompiler.bind(this);
   }
 }
