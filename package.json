@@ -49,7 +49,7 @@
     "faker": "^5.5.3",
     "husky": "^7.0.2",
     "jest": "^27.2.5",
-    "knex": "^0.95.11",
+    "knex": "^1.0.2",
     "lint-staged": "^11.2.3",
     "prettier": "^2.4.1",
     "release-it": "^14.11.6",
@@ -58,7 +58,7 @@
     "typescript": "^4.4.3"
   },
   "peerDependencies": {
-    "knex": "^0.95.5"
+    "knex": "^1.0.2"
   },
   "engines": {
     "node": ">=12"
