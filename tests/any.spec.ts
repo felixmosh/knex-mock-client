@@ -1,4 +1,4 @@
-import faker from 'faker';
+import { faker } from '@faker-js/faker';
 import knex, { Knex } from 'knex';
 import { getTracker, MockClient, Tracker } from '../src';
 

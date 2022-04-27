@@ -40,7 +40,7 @@ export async function addUser(user: User): Promise<{ id }> {
 import { expect } from '@jest/globals';
 import knex, { Knex } from 'knex';
 import { getTracker, MockClient } from 'knex-mock-client';
-import faker from 'faker';
+import { faker } from '@faker-js/faker';
 
 jest.mock('../common/db-setup', () => {
   return {
