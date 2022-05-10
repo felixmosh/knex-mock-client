@@ -19,19 +19,15 @@ type ResponseTypes = {
 };
 
 type QueryMethodType = typeof queryMethods[number];
-type History = Record<QueryMethodType, RawQuery[]>;
-type On = Record<QueryMethodType, (rawQueryMatcher: QueryMatcher) => ResponseTypes>;
 
 export class Tracker {
-  public readonly history: History = queryMethods.reduce((result, method) => {
-    result[method] = [];
-    return result;
-  }, {} as History);
+  public readonly history = Object.fromEntries(
+    queryMethods.map((method) => [method, [] as RawQuery[]])
+  );
 
-  public on = queryMethods.reduce((result, method) => {
-    result[method] = this.prepareStatement(method);
-    return result;
-  }, {} as On);
+  public on = Object.fromEntries(
+    queryMethods.map((method) => [method, this.prepareStatement(method)])
+  );
 
   private readonly config: TrackerConfig;
   private responses = new Map<RawQuery['method'], Handler[]>();
