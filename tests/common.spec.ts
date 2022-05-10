@@ -51,7 +51,7 @@ describe('common behaviour', () => {
           tracker.on[method]('wrong_name').response(givenData);
 
           await expect(db('table_name')).rejects.toMatchObject({
-            message: expect.stringContaining('No mock handler found'),
+            message: expect.stringContaining('Mock handler not found'),
           });
         });
       });

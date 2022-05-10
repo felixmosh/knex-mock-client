@@ -100,7 +100,7 @@ describe('mock Select statement', () => {
     expect(data).toEqual(givenData);
 
     await expect(db('table_name')).rejects.toMatchObject({
-      message: expect.stringContaining('No mock handler found'),
+      message: expect.stringContaining('Mock handler not found'),
     });
   });
 
@@ -158,7 +158,7 @@ describe('mock Select statement', () => {
     });
 
     await expect(db('table_name')).rejects.toMatchObject({
-      message: expect.stringContaining('No mock handler found'),
+      message: expect.stringContaining('Mock handler not found'),
     });
   });
 

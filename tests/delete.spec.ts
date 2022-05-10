@@ -100,7 +100,7 @@ describe('mock Delete statement', () => {
     expect(data).toEqual(affectedRows);
 
     await expect(db('table_name').delete().where('id', 1)).rejects.toMatchObject({
-      message: expect.stringContaining('No mock handler found'),
+      message: expect.stringContaining('Mock handler not found'),
     });
   });
 
@@ -144,7 +144,7 @@ describe('mock Delete statement', () => {
     });
 
     await expect(db('table_name').delete().where('id', 1)).rejects.toMatchObject({
-      message: expect.stringContaining('No mock handler found'),
+      message: expect.stringContaining('Mock handler not found'),
     });
   });
 

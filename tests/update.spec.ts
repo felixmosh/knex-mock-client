@@ -101,7 +101,7 @@ describe('mock Update statement', () => {
     expect(data).toEqual(affectedRows);
 
     await expect(db('table_name').update([{ name: faker.name.firstName() }])).rejects.toMatchObject(
-      { message: expect.stringContaining('No mock handler found') }
+      { message: expect.stringContaining('Mock handler not found') }
     );
   });
 
@@ -153,7 +153,7 @@ describe('mock Update statement', () => {
 
     await expect(db('table_name').update([{ name: faker.name.firstName() }])).rejects.toMatchObject(
       {
-        message: expect.stringContaining('No mock handler found'),
+        message: expect.stringContaining('Mock handler not found'),
       }
     );
   });

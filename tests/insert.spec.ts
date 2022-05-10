@@ -101,7 +101,7 @@ describe('mock Insert statement', () => {
     expect(data).toEqual(insertId);
 
     await expect(db('table_name').insert([{ name: faker.name.firstName() }])).rejects.toMatchObject(
-      { message: expect.stringContaining('No mock handler found') }
+      { message: expect.stringContaining('Mock handler not found') }
     );
   });
 
@@ -152,7 +152,7 @@ describe('mock Insert statement', () => {
 
     await expect(db('table_name').insert([{ name: faker.name.firstName() }])).rejects.toMatchObject(
       {
-        message: expect.stringContaining('No mock handler found'),
+        message: expect.stringContaining('Mock handler not found'),
       }
     );
   });

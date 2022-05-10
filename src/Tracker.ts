@@ -77,7 +77,7 @@ export class Tracker {
           }
         }
 
-        reject(new Error(`No mock handler found`));
+        reject(new Error(`Mock handler not found`));
       }, 0);
     });
   }
