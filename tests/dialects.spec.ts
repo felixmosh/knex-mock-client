@@ -38,6 +38,17 @@ describe('specific dialect', () => {
       expect(data).toEqual(givenData);
       expect(tracker.history.select).toHaveLength(1);
     });
+
+    it('should allow to mock insert query with onConflict', async () => {
+      tracker.on.insert('table_name').responseOnce(1);
+
+      await db('table_name')
+        .insert({ id: 1234, created_at: '2022-05-10', updated_at: '2022-05-10' })
+        .onConflict('id')
+        .merge(['id', 'created_at']);
+
+      expect(tracker.history.insert).toHaveLength(1);
+    });
   });
 
   describe('none-exists', () => {
