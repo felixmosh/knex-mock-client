@@ -63,5 +63,8 @@ export class MockClient extends knex.Client {
     const Dialect = require(`knex/lib/dialects/${resolvedClientName}/index.js`);
     const dialect = new Dialect(config);
     this.queryCompiler = dialect.queryCompiler.bind(this);
+    if (dialect.wrapIdentifierImpl) {
+      this.wrapIdentifierImpl = dialect.wrapIdentifierImpl.bind(this);
+    }
   }
 }
