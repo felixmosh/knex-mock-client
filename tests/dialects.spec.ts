@@ -51,6 +51,29 @@ describe('specific dialect', () => {
     });
   });
 
+  describe('mysql', () => {
+    beforeAll(() => {
+      db = knex({
+        client: MockClient,
+        dialect: 'mysql',
+      });
+      tracker = getTracker();
+    });
+
+    afterEach(() => {
+      tracker.reset();
+    });
+
+    it('should use the correct wrapper', async () => {
+      tracker.on.select('table_name').response([]);
+
+      await db('table_name');
+
+      expect(tracker.history.select).toHaveLength(1);
+      expect(tracker.history.select[0].sql).toStrictEqual('select * from `table_name`');
+    });
+  });
+
   describe('none-exists', () => {
     it('should should throw an error when passing none exists dialect', () => {
       expect(() =>
