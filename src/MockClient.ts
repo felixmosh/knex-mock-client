@@ -62,9 +62,7 @@ export class MockClient extends knex.Client {
     const resolvedClientName = resolveClientNameWithAliases(config.dialect);
     const Dialect = require(`knex/lib/dialects/${resolvedClientName}/index.js`);
     const dialect = new Dialect(config);
-    this.queryCompiler = dialect.queryCompiler.bind(this);
-    if (dialect.wrapIdentifierImpl) {
-      this.wrapIdentifierImpl = dialect.wrapIdentifierImpl.bind(this);
-    }
+
+    Object.setPrototypeOf(this.constructor.prototype, dialect); // make the specific dialect client to be the prototype of this class.
   }
 }

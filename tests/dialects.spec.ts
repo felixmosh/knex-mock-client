@@ -37,6 +37,7 @@ describe('specific dialect', () => {
 
       expect(data).toEqual(givenData);
       expect(tracker.history.select).toHaveLength(1);
+      expect(tracker.history.select[0].sql).toContain('for update nowait');
     });
 
     it('should allow to mock insert query with onConflict', async () => {
@@ -48,6 +49,26 @@ describe('specific dialect', () => {
         .merge(['id', 'created_at']);
 
       expect(tracker.history.insert).toHaveLength(1);
+      expect(tracker.history.insert[0].sql).toContain('on conflict');
+    });
+
+    it('should support transactions', async () => {
+      tracker.on
+        .insert(({ sql }) => ['table_name', 'returning'].every((part) => sql.includes(part)))
+        .responseOnce(1);
+      tracker.on.delete('table_name').responseOnce(1);
+
+      await db.transaction(async (trx) => {
+        await db('table_name')
+          .insert({ name: faker.name.firstName() })
+          .returning('*')
+          .transacting(trx);
+        await db('table_name').delete().where({ name: faker.name.firstName() }).transacting(trx);
+      });
+
+      expect(tracker.history.insert).toHaveLength(1);
+      expect(tracker.history.insert[0].sql).toContain('returning');
+      expect(tracker.history.delete).toHaveLength(1);
     });
   });
 
