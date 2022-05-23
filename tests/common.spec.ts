@@ -57,4 +57,31 @@ describe('common behaviour', () => {
       });
     });
   });
+
+  describe('fakeTimers', () => {
+    let db: Knex;
+    let tracker: Tracker;
+
+    beforeAll(() => {
+      jest.useFakeTimers();
+
+      db = knex({
+        client: MockClient,
+      });
+      tracker = getTracker();
+    });
+
+    it('should support jest fake timers', async () => {
+      const affectedRows = faker.datatype.number();
+      tracker.on.select('table_name').response(affectedRows);
+
+      const data = await db('table_name').where('id', 1);
+
+      expect(data).toEqual(affectedRows);
+    });
+
+    afterAll(() => {
+      jest.useRealTimers();
+    });
+  });
 });
