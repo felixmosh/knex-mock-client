@@ -1,6 +1,7 @@
 import cloneDeep from 'lodash.clonedeep';
 import { FunctionQueryMatcher, QueryMatcher, RawQuery } from '../types/mock-client';
 import { queryMethods, transactionCommands } from './constants';
+import { isUsingFakeTimers } from './utils';
 
 export type TrackerConfig = Record<string, unknown>;
 
@@ -47,8 +48,8 @@ export class Tracker {
           return resolve(undefined);
         }
 
-        const possiableMethods: RawQuery['method'][] = [rawQuery.method, 'any'];
-        for (const method of possiableMethods) {
+        const possibleMethods: RawQuery['method'][] = [rawQuery.method, 'any'];
+        for (const method of possibleMethods) {
           const handlers: Handler[] = this.responses.get(method) || [];
 
           for (let i = 0; i < handlers.length; i++) {
@@ -75,6 +76,14 @@ export class Tracker {
 
         reject(new Error(`Mock handler not found`));
       }, 0);
+
+      if (isUsingFakeTimers()) {
+        /**
+         * Based on https://github.com/testing-library/react-testing-library/commit/403aa5cd8479c9778174fad76b59b02a470c7d1b
+         * without this, a test using fake timers would never get microtasks actually flushed.
+         */
+        jest.advanceTimersByTime(0);
+      }
     });
   }
 
