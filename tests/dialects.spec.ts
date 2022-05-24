@@ -95,6 +95,33 @@ describe('specific dialect', () => {
     });
   });
 
+  describe('mssql', () => {
+    beforeAll(() => {
+      db = knex({
+        client: MockClient,
+        dialect: 'mssql',
+      });
+      tracker = getTracker();
+    });
+
+    afterEach(() => {
+      tracker.reset();
+    });
+
+    it('should work with mssql dialect', async () => {
+      const returnVal = { id: 1 };
+      tracker.on.update('table_name').responseOnce(returnVal);
+
+      const updates = await db.transaction((tx) => {
+        return tx('table_name').update({ value: 'test' }).where({ id: 1 });
+      });
+
+      expect(tracker.history.update).toHaveLength(1);
+      expect(tracker.history.update[0].sql).toContain(`table_name`);
+      expect(updates).toEqual(returnVal);
+    });
+  });
+
   describe('none-exists', () => {
     it('should should throw an error when passing none exists dialect', () => {
       expect(() =>
