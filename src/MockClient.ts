@@ -17,7 +17,16 @@ export class MockClient extends knex.Client {
   }
 
   public acquireConnection() {
-    return Promise.resolve({ __knexUid: 1, fakeConnection: true });
+    return Promise.resolve({
+      __knexUid: 1,
+      fakeConnection: true,
+      beginTransaction(cb: () => void) {
+        cb();
+      },
+      commitTransaction(cb: () => void) {
+        cb();
+      },
+    });
   }
 
   public releaseConnection() {
