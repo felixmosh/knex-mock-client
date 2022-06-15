@@ -22,9 +22,12 @@ type ResponseTypes = {
 type QueryMethodType = typeof queryMethods[number];
 
 export class Tracker {
-  public readonly history = Object.fromEntries(
-    queryMethods.map((method) => [method, [] as RawQuery[]])
-  );
+  public readonly history: Record<string, RawQuery[]> = {
+    ...Object.fromEntries(
+      queryMethods.map((method) => [method, [] as RawQuery[]])
+    ),
+    all: [],
+  };
 
   public on = Object.fromEntries(
     queryMethods.map((method) => [method, this.prepareStatement(method)])
@@ -47,6 +50,8 @@ export class Tracker {
         ) {
           return resolve(undefined);
         }
+
+        this.history.all.push(rawQuery);
 
         const possibleMethods: RawQuery['method'][] = [rawQuery.method, 'any'];
         for (const method of possibleMethods) {
