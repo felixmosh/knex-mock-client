@@ -105,22 +105,35 @@ Each one of `on` methods (`select`, `insert`,`update`, `delete`, `any`) are acce
 
 You can specify the db response by calling:
 
-1. `response<T>(dbData)` - will register a permanent query handler with the same response value
+1. `response<T = any>(data: T | ((rawQuery: RawQuery) => (T | Promise<T>)))` - This will register a permanent query handler.
+
+   If a value is provided, it will be returned directly. 
+   If a callback is passed, it will be called with the `RawQuery` and should return a value for the tracker to return.
 
    ```ts
    tracker.on.select('select * from users where `id`=?').response([{ id: 1, name: 'foo' }]);
    ```
+   ```ts
+   tracker.on.select('select * from users where `id`=?').response(rawQuery => [{ id: 1, name: 'foo' }]);
+   ```
 
-2. `responseOnce<T>(dbData)` - will register a one-time query handler, after the first usage it will
-   be removed from handlers list.
+2. `responseOnce<T = any>(data: T | ((rawQuery: RawQuery) => (T | Promise<T>)))`- This will register a one-time query handler, which will be removed from handlers list after the first usage.
+
+   If a value is provided, it will be returned directly. If a callback is passed, it will be called with the `RawQuery` and should return a value for the tracker to return.
+
    ```ts
    tracker.on.select('select * from users where `id`=?').responseOnce([{ id: 1, name: 'foo' }]);
    ```
+   ```ts
+   tracker.on.select('select * from users where `id`=?').responseOnce(rawQuery => Promise.resolve([{ id: 1, name: 'foo' }]));
+   ```
+
 3. `simulateError(errorMessage: string)` - will register a permanent failure handler for the matched
    query
    ```ts
    tracker.on.select('select * from users where `id`=?').simulateError('Connection lost');
    ```
+
 4. `simulateErrorOnce(errorMessage: string)` - will register a one-time failure handler, after the
    first usage it will be removed from handlers list.
    ```ts
