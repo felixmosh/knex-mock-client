@@ -150,7 +150,9 @@ query methods.
 ## History Calls
 
 Each db request that your app makes throughout `knex` will be registered in a scoped (by query
-method) history call list. Each call is an object with the interface of `RawQuery`.
+method) history call list. It will also be registered in `tracker.history.all`.
+
+Each call is an object with the interface of `RawQuery`.
 
 ```ts
 interface RawQuery {

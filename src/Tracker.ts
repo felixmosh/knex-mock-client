@@ -31,6 +31,7 @@ type QueryMethodType = typeof queryMethods[number];
 
 type History = Record<QueryMethodType, RawQuery[]> & {
   transactions: TransactionState[],
+  all: RawQuery[],
 };
 
 export class Tracker {
@@ -39,6 +40,7 @@ export class Tracker {
       queryMethods.map((method) => [method, [] as RawQuery[]])
     ) as Record<QueryMethodType, RawQuery[]>,
     transactions: [],
+    all: [],
   };
 
   public readonly on = Object.fromEntries(
@@ -59,6 +61,8 @@ export class Tracker {
         if (this.receiveTransactionCommand(connection, rawQuery)) {
           return resolve(undefined);
         }
+
+        this.history.all.push(rawQuery);
 
         const possibleMethods: RawQuery['method'][] = [rawQuery.method, 'any'];
         for (const method of possibleMethods) {
@@ -110,6 +114,7 @@ export class Tracker {
 
   public resetHistory() {
     this.history.transactions = [];
+    this.history.all = [];
     queryMethods.forEach((method) => (this.history[method] = []));
   }
 
