@@ -114,7 +114,9 @@ You can specify the db response by calling:
    tracker.on.select('select * from users where `id`=?').response([{ id: 1, name: 'foo' }]);
    ```
    ```ts
-   tracker.on.select('select * from users where `id`=?').response(rawQuery => [{ id: 1, name: 'foo' }]);
+   tracker.on
+     .select('select * from users where `id`=?')
+     .response((rawQuery) => [{ id: 1, name: 'foo' }]);
    ```
 
 2. `responseOnce<T = any>(data: T | ((rawQuery: RawQuery) => (T | Promise<T>)))`- This will register a one-time query handler, which will be removed from handlers list after the first usage.
@@ -125,7 +127,9 @@ You can specify the db response by calling:
    tracker.on.select('select * from users where `id`=?').responseOnce([{ id: 1, name: 'foo' }]);
    ```
    ```ts
-   tracker.on.select('select * from users where `id`=?').responseOnce(rawQuery => Promise.resolve([{ id: 1, name: 'foo' }]));
+   tracker.on
+     .select('select * from users where `id`=?')
+     .responseOnce((rawQuery) => Promise.resolve([{ id: 1, name: 'foo' }]));
    ```
 
 3. `simulateError(errorMessage: string)` - will register a permanent failure handler for the matched
@@ -181,6 +185,7 @@ const data = await db('table_name').distinctOn('age');
 You can reset all history calls by calling `tracker.resetHistory()`.
 
 You can reset `queryHandlers` & `history` by calling `tracker.reset()`.
+
 
 This lib got inspiration from [`axios-mock-adapter`](https://github.com/ctimmerm/axios-mock-adapter)
 api️.
