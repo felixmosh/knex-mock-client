@@ -34,7 +34,7 @@ describe('transaction', () => {
 
     expect(transactions).toEqual([{
       id: 0,
-      state: 'commited',
+      state: 'committed',
       queries: [
         expect.objectContaining({
           method: 'insert',
@@ -108,7 +108,7 @@ describe('transaction', () => {
     expect(transactions).toEqual([
       {
         id: 0,
-        state: 'commited',
+        state: 'committed',
         queries: [
           expect.objectContaining({
             method: 'insert',
@@ -118,7 +118,7 @@ describe('transaction', () => {
       {
         id: 1,
         parent: 0,
-        state: 'commited',
+        state: 'committed',
         queries: [
           expect.objectContaining({
             method: 'delete',
@@ -128,7 +128,7 @@ describe('transaction', () => {
       {
         id: 2,
         parent: 0,
-        state: 'commited',
+        state: 'committed',
         queries: [
           expect.objectContaining({
             method: 'select',
@@ -154,7 +154,7 @@ describe('transaction', () => {
 
     expect(transactions).toEqual([{
       id: 0,
-      state: 'commited',
+      state: 'committed',
       queries: [
         expect.objectContaining({
           method: 'insert',
@@ -192,7 +192,7 @@ describe('transaction', () => {
     expect(transactions).toEqual([
       {
         id: 0,
-        state: 'commited',
+        state: 'committed',
         queries: [
           expect.objectContaining({
             sql: 'insert into "table_one" ("name") values (?)',
@@ -201,7 +201,7 @@ describe('transaction', () => {
       },
       {
         id: 1,
-        state: 'commited',
+        state: 'committed',
         queries: [
           expect.objectContaining({
             sql: 'insert into "table_two" ("name") values (?)',
@@ -211,7 +211,7 @@ describe('transaction', () => {
       {
         id: 2,
         parent: 0,
-        state: 'commited',
+        state: 'committed',
         queries: [
           expect.objectContaining({
             sql: 'delete from "table_one" where "name" = ?',
@@ -221,7 +221,7 @@ describe('transaction', () => {
       {
         id: 3,
         parent: 1,
-        state: 'commited',
+        state: 'committed',
         queries: [
           expect.objectContaining({
             sql: 'delete from "table_two" where "name" = ?',

@@ -9,7 +9,7 @@ export type TrackerConfig = Record<string, unknown>;
 export type TransactionState = {
   id: number,
   parent?: number,
-  state: 'ongoing' | 'commited' | 'rolled back',
+  state: 'ongoing' | 'committed' | 'rolled back',
   queries: RawQuery[],
 }
 
@@ -160,8 +160,7 @@ export class Tracker {
 
       case 'COMMIT;':
       case 'RELEASE SAVEPOINT':
-        // this.transactions.set(txId, {...txState, state: 'commited'});
-        txState.state = 'commited';
+        txState.state = 'committed';
 
         // Knex only actively sets the internal transaction ID when going down a transaction.
         // Since it keeps track of the transaction internally, there is no need to
