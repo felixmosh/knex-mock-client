@@ -174,12 +174,13 @@ describe('transaction', () => {
     await nestedTrx1('table_one').delete().where({ name: faker.name.firstName() });
 
     await nestedTrx2.commit();
-    await nestedTrx1.commit();
+    await nestedTrx1.rollback();
 
     await trx1.commit();
-    await trx2.commit();
+    await trx2.rollback();
 
     expect(tracker.history.transactions).toEqual([
+      // trx1
       {
         id: 0,
         state: 'committed',
@@ -189,25 +190,31 @@ describe('transaction', () => {
           }),
         ],
       },
+
+      // trx2
       {
         id: 1,
-        state: 'committed',
+        state: 'rolled back',
         queries: [
           expect.objectContaining({
             sql: 'insert into "table_two" ("name") values (?)',
           }),
         ],
       },
+
+      // nestedTrx1
       {
         id: 2,
         parent: 0,
-        state: 'committed',
+        state: 'rolled back',
         queries: [
           expect.objectContaining({
             sql: 'delete from "table_one" where "name" = ?',
           }),
         ],
       },
+
+      // nestedTrx2
       {
         id: 3,
         parent: 1,
