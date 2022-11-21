@@ -14,7 +14,7 @@ class Stack<T> {
   /**
    * Peek at a value on the stack without removing it.
    * 
-   *@param offset {number} Offset from the top of the stack to peek. Default to 0.
+   * @param offset {number} Offset from the top of the stack to peek. Default to 0.
    */
   public peek(offset = 0): T | undefined {
     return this.values[this.values.length - offset - 1];
@@ -28,6 +28,8 @@ class Stack<T> {
    * If the given value is undefined, clears the stack.
    */
   public pointTo(value: T | undefined) {
+    if (this.peek() === value) return;
+
     if (value === undefined) {
       // Clear the stack
       this.values.splice(0);
@@ -49,20 +51,9 @@ export class MockConnection {
   public __knexUid = Math.trunc(Math.random() * 1e6);
   public readonly fakeConnection = true;
 
-  public transactionStack = new Stack<string>();
+  public transactionStack = new Stack<number>();
 
   public beginTransaction(cb: () => void) { cb(); }
   public commitTransaction(cb: () => void) { cb(); }
-
-  /**
-   * Transaction ID managed by Knex.
-   */
-  get __knexTxId(): string | undefined {
-    return this.transactionStack.peek();
-  }
-
-  set __knexTxId(txId: string | undefined) {
-    this.transactionStack.pointTo(txId);
-  }
 }
 

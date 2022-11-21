@@ -170,8 +170,8 @@ describe('transaction', () => {
     const nestedTrx1 = await trx1.transaction();
     const nestedTrx2 = await trx2.transaction();
 
-    await nestedTrx1('table_one').delete().where({ name: faker.name.firstName() });
     await nestedTrx2('table_two').delete().where({ name: faker.name.firstName() });
+    await nestedTrx1('table_one').delete().where({ name: faker.name.firstName() });
 
     await nestedTrx2.commit();
     await nestedTrx1.commit();

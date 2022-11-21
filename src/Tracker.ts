@@ -13,15 +13,6 @@ export type TransactionState = {
   queries: RawQuery[],
 };
 
-type InternalTransactionState = TransactionState & {
-  originalId: string,
-  originalParent?: string,
-};
-
-type History = Record<QueryMethodType, RawQuery[]> & {
-  transactions: TransactionState[],
-};
-
 interface Handler<T = any> {
   data: T | ((rawQuery: RawQuery) => T);
   match: FunctionQueryMatcher;
@@ -38,6 +29,10 @@ type ResponseTypes = {
 
 type QueryMethodType = typeof queryMethods[number];
 
+type History = Record<QueryMethodType, RawQuery[]> & {
+  transactions: TransactionState[],
+};
+
 export class Tracker {
   public readonly history: History = {
     ...Object.fromEntries(
@@ -52,14 +47,8 @@ export class Tracker {
 
   private readonly config: TrackerConfig;
   private responses = new Map<RawQuery['method'], Handler[]>();
-  private transactions = new Map<string, InternalTransactionState>();
 
   constructor(trackerConfig: TrackerConfig) {
-    // Provide a dynamic 
-    Object.defineProperty(this.history, 'transactions', {
-      get: () => this.getTransactions(),
-    });
-    
     this.config = trackerConfig;
     this.reset();
   }
@@ -113,7 +102,6 @@ export class Tracker {
   public reset() {
     this.resetHandlers();
     this.resetHistory();
-    this.resetTransactions();
   }
 
   public resetHandlers() {
@@ -121,74 +109,54 @@ export class Tracker {
   }
 
   public resetHistory() {
-    queryMethods.forEach((method) => (this.history[method].length = 0));
-  }
-
-  public resetTransactions() {
-    this.transactions.clear();
-  }
-
-  private getTransactions(): TransactionState[] {
-    return Array.from(this.transactions.values())
-      .sort((a, b) => a.id - b.id)
-      // Hide original transaction IDs as those are not predictable within a test
-      // because they are generated from a global state within a transitive
-      // dependency of Knex.
-      .map(({ originalId, originalParent, ...txState }) => txState);
+    this.history.transactions = [];
+    queryMethods.forEach((method) => (this.history[method] = []));
   }
 
   private receiveTransactionCommand(connection: MockConnection, rawQuery: RawQuery): boolean {
     const txId = connection.transactionStack.peek(0);
 
-    // Knex always assign a transaction ID before emiting any transaction control commands.
-    if (txId === undefined) return false;
-
-    const parentTxId = connection.transactionStack.peek(1);
-
-    const txState: InternalTransactionState = this.transactions.get(txId) ?? {
-      originalId: txId,
-      id: this.transactions.size,
-      state: 'ongoing',
-      queries: [],
-      ...parentTxId && {
-        originalParent: parentTxId,
-        parent: this.transactions.get(parentTxId)?.id,
-      },
-    };
+    const txState: TransactionState | undefined = txId === undefined
+      ? undefined
+      : this.history.transactions[txId];
 
     const trxCommand = transactionCommands.find((trxCommand) => rawQuery.sql.startsWith(trxCommand))
 
-    if (trxCommand === undefined) {
-      txState.queries.push(rawQuery);
-
-      return false;
-    }
-
     switch (trxCommand) {
       case 'BEGIN;':
-      case 'SAVEPOINT':
-        this.transactions.set(txId, txState);
+      case 'SAVEPOINT': {
+        const newTxState: TransactionState = {
+          id: this.history.transactions.length,
+          state: 'ongoing',
+          queries: [],
+          ...txId !== undefined && { parent: txId },
+        };
+
+        this.history.transactions.push(newTxState);
+        connection.transactionStack.pointTo(newTxState.id);
         break;
+      }
 
       case 'COMMIT;':
-      case 'RELEASE SAVEPOINT':
-        txState.state = 'committed';
-
-        // Knex only actively sets the internal transaction ID when going down a transaction.
-        // Since it keeps track of the transaction internally, there is no need to
-        // inform the connection that it is no longer running that transaction.
-        // As a workaround, we point the connection to the parent transaction by ourselves here.
-        // If Knex decides to set the transaction ID when going up the stack,
-        // this call just won't do anything as it is idempotent.
-        connection.transactionStack.pointTo(txState.originalParent);
+      case 'RELEASE SAVEPOINT': {
+        if (txState) {
+          txState.state = 'committed';
+          connection.transactionStack.pointTo(txState.parent);
+        }
         break;
+      }
 
-      case 'ROLLBACK':
-        txState.state = 'rolled back';
-
-        // See reasoning above.
-        connection.transactionStack.pointTo(txState.originalParent);
+      case 'ROLLBACK': {
+        if (txState) {
+          txState.state = 'rolled back';
+          connection.transactionStack.pointTo(txState.parent);
+        }
         break;
+      }
+
+      case undefined:
+        txState?.queries.push(rawQuery);
+        return false;
     }
 
     return true;
