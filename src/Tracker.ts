@@ -41,9 +41,9 @@ export class Tracker {
     transactions: [],
   };
 
-  public on = Object.fromEntries(
+  public readonly on = Object.fromEntries(
     queryMethods.map((method) => [method, this.prepareStatement(method)])
-  );
+  ) as Record<QueryMethodType, (rawQueryMatcher: QueryMatcher) => ResponseTypes>;
 
   private readonly config: TrackerConfig;
   private responses = new Map<RawQuery['method'], Handler[]>();
