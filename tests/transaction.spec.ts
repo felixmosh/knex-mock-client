@@ -30,9 +30,7 @@ describe('transaction', () => {
     expect(tracker.history.insert).toHaveLength(1);
     expect(tracker.history.delete).toHaveLength(1);
 
-    const transactions = tracker.getTransactions();
-
-    expect(transactions).toEqual([{
+    expect(tracker.history.transactions).toEqual([{
       id: 0,
       state: 'committed',
       queries: [
@@ -63,9 +61,7 @@ describe('transaction', () => {
     expect(tracker.history.insert).toHaveLength(1);
     expect(tracker.history.delete).toHaveLength(1);
 
-    const transactions = tracker.getTransactions();
-
-    expect(transactions).toEqual([{
+    expect(tracker.history.transactions).toEqual([{
       id: 0,
       state: 'rolled back',
       queries: [
@@ -103,9 +99,7 @@ describe('transaction', () => {
     expect(tracker.history.insert).toHaveLength(1);
     expect(tracker.history.delete).toHaveLength(1);
 
-    const transactions = tracker.getTransactions();
-
-    expect(transactions).toEqual([
+    expect(tracker.history.transactions).toEqual([
       {
         id: 0,
         state: 'committed',
@@ -150,9 +144,7 @@ describe('transaction', () => {
     expect(tracker.history.insert).toHaveLength(1);
     expect(tracker.history.delete).toHaveLength(1);
 
-    const transactions = tracker.getTransactions();
-
-    expect(transactions).toEqual([{
+    expect(tracker.history.transactions).toEqual([{
       id: 0,
       state: 'committed',
       queries: [
@@ -187,9 +179,7 @@ describe('transaction', () => {
     await trx1.commit();
     await trx2.commit();
 
-    const transactions = tracker.getTransactions();
-
-    expect(transactions).toEqual([
+    expect(tracker.history.transactions).toEqual([
       {
         id: 0,
         state: 'committed',

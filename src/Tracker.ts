@@ -11,12 +11,16 @@ export type TransactionState = {
   parent?: number,
   state: 'ongoing' | 'committed' | 'rolled back',
   queries: RawQuery[],
-}
+};
 
 type InternalTransactionState = TransactionState & {
   originalId: string,
   originalParent?: string,
-}
+};
+
+type History = Record<QueryMethodType, RawQuery[]> & {
+  transactions: TransactionState[],
+};
 
 interface Handler<T = any> {
   data: T | ((rawQuery: RawQuery) => T);
@@ -35,9 +39,12 @@ type ResponseTypes = {
 type QueryMethodType = typeof queryMethods[number];
 
 export class Tracker {
-  public readonly history = Object.fromEntries(
-    queryMethods.map((method) => [method, [] as RawQuery[]])
-  );
+  public readonly history: History = {
+    ...Object.fromEntries(
+      queryMethods.map((method) => [method, [] as RawQuery[]])
+    ) as Record<QueryMethodType, RawQuery[]>,
+    transactions: [],
+  };
 
   public on = Object.fromEntries(
     queryMethods.map((method) => [method, this.prepareStatement(method)])
@@ -48,6 +55,11 @@ export class Tracker {
   private transactions = new Map<string, InternalTransactionState>();
 
   constructor(trackerConfig: TrackerConfig) {
+    // Provide a dynamic 
+    Object.defineProperty(this.history, 'transactions', {
+      get: () => this.getTransactions(),
+    });
+    
     this.config = trackerConfig;
     this.reset();
   }
@@ -116,13 +128,13 @@ export class Tracker {
     this.transactions.clear();
   }
 
-  public getTransactions(): TransactionState[] {
+  private getTransactions(): TransactionState[] {
     return Array.from(this.transactions.values())
       .sort((a, b) => a.id - b.id)
       // Hide original transaction IDs as those are not predictable within a test
       // because they are generated from a global state within a transitive
       // dependency of Knex.
-      .map(({originalId, originalParent, ...txState}) => txState);
+      .map(({ originalId, originalParent, ...txState }) => txState);
   }
 
   private receiveTransactionCommand(connection: MockConnection, rawQuery: RawQuery): boolean {
