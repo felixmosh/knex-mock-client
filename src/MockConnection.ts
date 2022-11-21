@@ -7,6 +7,13 @@ export class MockConnection {
   public beginTransaction(cb: () => void) { cb(); }
   public commitTransaction(cb: () => void) { cb(); }
 
+  /**
+   * Points the transaction stack to the given transaction.
+   * 
+   * If the given transaction ID is no on the stack, push it to the top.
+   * If the given transaction ID is already in the stack, remove all the transactions above it.
+   * If the given transaction ID is undefined, clears the stack.
+   */
   public pointStackTo(txId: string | undefined) {
     if (txId === undefined) {
       this.transactionStack.splice(0);
