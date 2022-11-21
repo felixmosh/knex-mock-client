@@ -20,6 +20,7 @@ describe('transaction', () => {
   it('should support transactions', async () => {
     tracker.on.insert('table_name').responseOnce(1);
     tracker.on.delete('table_name').responseOnce(1);
+    tracker.on.select('foo').responseOnce([]);
 
     await db.transaction(async (trx) => {
       await db('table_name').insert({ name: faker.name.firstName() }).transacting(trx);
@@ -28,6 +29,19 @@ describe('transaction', () => {
 
     expect(tracker.history.insert).toHaveLength(1);
     expect(tracker.history.delete).toHaveLength(1);
+
+    expect(tracker.history.transactions).toEqual([{
+      id: 0,
+      state: 'committed',
+      queries: [
+        expect.objectContaining({
+          method: 'insert',
+        }),
+        expect.objectContaining({
+          method: 'delete',
+        }),
+      ],
+    }]);
   });
 
   it('should support transactions with rollback', async () => {
@@ -46,11 +60,25 @@ describe('transaction', () => {
 
     expect(tracker.history.insert).toHaveLength(1);
     expect(tracker.history.delete).toHaveLength(1);
+
+    expect(tracker.history.transactions).toEqual([{
+      id: 0,
+      state: 'rolled back',
+      queries: [
+        expect.objectContaining({
+          method: 'insert',
+        }),
+        expect.objectContaining({
+          method: 'delete',
+        }),
+      ],
+    }]);
   });
 
   it('should support nested transactions', async () => {
     tracker.on.insert('table_name').responseOnce(1);
     tracker.on.delete('table_name').responseOnce(1);
+    tracker.on.select('table_name').responseOnce([]);
 
     await db.transaction(async (trx) => {
       await db('table_name').insert({ name: faker.name.firstName() }).transacting(trx);
@@ -60,10 +88,48 @@ describe('transaction', () => {
           .where({ name: faker.name.firstName() })
           .transacting(innerTrx);
       });
+      await trx.transaction(async (innerTrx) => {
+        await db('table_name')
+          .select()
+          .where({ name: faker.name.firstName() })
+          .transacting(innerTrx);
+      });
     });
 
     expect(tracker.history.insert).toHaveLength(1);
     expect(tracker.history.delete).toHaveLength(1);
+
+    expect(tracker.history.transactions).toEqual([
+      {
+        id: 0,
+        state: 'committed',
+        queries: [
+          expect.objectContaining({
+            method: 'insert',
+          }),
+        ],
+      },
+      {
+        id: 1,
+        parent: 0,
+        state: 'committed',
+        queries: [
+          expect.objectContaining({
+            method: 'delete',
+          }),
+        ],
+      },
+      {
+        id: 2,
+        parent: 0,
+        state: 'committed',
+        queries: [
+          expect.objectContaining({
+            method: 'select',
+          }),
+        ],
+      },
+    ]);
   });
 
   it('should support transactions with commit', async () => {
@@ -77,5 +143,88 @@ describe('transaction', () => {
 
     expect(tracker.history.insert).toHaveLength(1);
     expect(tracker.history.delete).toHaveLength(1);
+
+    expect(tracker.history.transactions).toEqual([{
+      id: 0,
+      state: 'committed',
+      queries: [
+        expect.objectContaining({
+          method: 'insert',
+        }),
+        expect.objectContaining({
+          method: 'delete',
+        }),
+      ],
+    }]);
+  });
+
+  it('should keep track of interleaving transactions', async () => {
+    tracker.on.any(/.*/).response(1);
+
+    const trx1 = await db.transaction();
+    const trx2 = await db.transaction();
+
+    await trx1('table_one').insert({ name: faker.name.firstName() });
+    await trx2('table_two').insert({ name: faker.name.firstName() });
+
+    const nestedTrx1 = await trx1.transaction();
+    const nestedTrx2 = await trx2.transaction();
+
+    await nestedTrx2('table_two').delete().where({ name: faker.name.firstName() });
+    await nestedTrx1('table_one').delete().where({ name: faker.name.firstName() });
+
+    await nestedTrx2.commit();
+    await nestedTrx1.rollback();
+
+    await trx1.commit();
+    await trx2.rollback();
+
+    expect(tracker.history.transactions).toEqual([
+      // trx1
+      {
+        id: 0,
+        state: 'committed',
+        queries: [
+          expect.objectContaining({
+            sql: 'insert into "table_one" ("name") values (?)',
+          }),
+        ],
+      },
+
+      // trx2
+      {
+        id: 1,
+        state: 'rolled back',
+        queries: [
+          expect.objectContaining({
+            sql: 'insert into "table_two" ("name") values (?)',
+          }),
+        ],
+      },
+
+      // nestedTrx1
+      {
+        id: 2,
+        parent: 0,
+        state: 'rolled back',
+        queries: [
+          expect.objectContaining({
+            sql: 'delete from "table_one" where "name" = ?',
+          }),
+        ],
+      },
+
+      // nestedTrx2
+      {
+        id: 3,
+        parent: 1,
+        state: 'committed',
+        queries: [
+          expect.objectContaining({
+            sql: 'delete from "table_two" where "name" = ?',
+          }),
+        ],
+      },
+    ]);
   });
 });

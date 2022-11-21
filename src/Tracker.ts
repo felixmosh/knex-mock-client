@@ -1,9 +1,17 @@
 import cloneDeep from 'lodash.clonedeep';
 import { FunctionQueryMatcher, QueryMatcher, RawQuery } from '../types/mock-client';
 import { queryMethods, transactionCommands } from './constants';
+import { MockConnection } from './MockConnection';
 import { isUsingFakeTimers } from './utils';
 
 export type TrackerConfig = Record<string, unknown>;
+
+export type TransactionState = {
+  id: number,
+  parent?: number,
+  state: 'ongoing' | 'committed' | 'rolled back',
+  queries: RawQuery[],
+};
 
 interface Handler<T = any> {
   data: T | ((rawQuery: RawQuery) => T);
@@ -21,10 +29,17 @@ type ResponseTypes = {
 
 type QueryMethodType = typeof queryMethods[number];
 
+type History = Record<QueryMethodType, RawQuery[]> & {
+  transactions: TransactionState[],
+};
+
 export class Tracker {
-  public readonly history = Object.fromEntries(
-    queryMethods.map((method) => [method, [] as RawQuery[]])
-  ) as Record<QueryMethodType, RawQuery[]>;
+  public readonly history: History = {
+    ...Object.fromEntries(
+      queryMethods.map((method) => [method, [] as RawQuery[]])
+    ) as Record<QueryMethodType, RawQuery[]>,
+    transactions: [],
+  };
 
   public readonly on = Object.fromEntries(
     queryMethods.map((method) => [method, this.prepareStatement(method)])
@@ -38,13 +53,10 @@ export class Tracker {
     this.reset();
   }
 
-  public _handle(rawQuery: RawQuery): Promise<any> {
+  public _handle(connection: MockConnection, rawQuery: RawQuery): Promise<any> {
     return new Promise((resolve, reject) => {
       setTimeout(async () => {
-        if (
-          typeof rawQuery.method === 'undefined' &&
-          transactionCommands.some((trxCommand) => rawQuery.sql.startsWith(trxCommand))
-        ) {
+        if (this.receiveTransactionCommand(connection, rawQuery)) {
           return resolve(undefined);
         }
 
@@ -97,7 +109,57 @@ export class Tracker {
   }
 
   public resetHistory() {
-    queryMethods.forEach((method) => (this.history[method].length = 0));
+    this.history.transactions = [];
+    queryMethods.forEach((method) => (this.history[method] = []));
+  }
+
+  private receiveTransactionCommand(connection: MockConnection, rawQuery: RawQuery): boolean {
+    const txId = connection.transactionStack.peek(0);
+
+    const txState: TransactionState | undefined = txId === undefined
+      ? undefined
+      : this.history.transactions[txId];
+
+    const trxCommand = transactionCommands.find((trxCommand) => rawQuery.sql.startsWith(trxCommand))
+
+    switch (trxCommand) {
+      case 'BEGIN;':
+      case 'SAVEPOINT': {
+        const newTxState: TransactionState = {
+          id: this.history.transactions.length,
+          state: 'ongoing',
+          queries: [],
+          ...txId !== undefined && { parent: txId },
+        };
+
+        this.history.transactions.push(newTxState);
+        connection.transactionStack.pointTo(newTxState.id);
+        break;
+      }
+
+      case 'COMMIT;':
+      case 'RELEASE SAVEPOINT': {
+        if (txState) {
+          txState.state = 'committed';
+          connection.transactionStack.pointTo(txState.parent);
+        }
+        break;
+      }
+
+      case 'ROLLBACK': {
+        if (txState) {
+          txState.state = 'rolled back';
+          connection.transactionStack.pointTo(txState.parent);
+        }
+        break;
+      }
+
+      case undefined:
+        txState?.queries.push(rawQuery);
+        return false;
+    }
+
+    return true;
   }
 
   private prepareMatcher(rawQueryMatcher: QueryMatcher): Handler['match'] {
