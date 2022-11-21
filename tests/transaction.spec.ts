@@ -165,4 +165,69 @@ describe('transaction', () => {
       ],
     }]);
   });
+
+  it('should keep track of interleaving transactions', async () => {
+    tracker.on.any(/.*/).response(1);
+
+    const trx1 = await db.transaction();
+    const trx2 = await db.transaction();
+
+    await trx1('table_one').insert({ name: faker.name.firstName() });
+    await trx2('table_two').insert({ name: faker.name.firstName() });
+
+    const nestedTrx1 = await trx1.transaction();
+    const nestedTrx2 = await trx2.transaction();
+
+    await nestedTrx1('table_one').delete().where({ name: faker.name.firstName() });
+    await nestedTrx2('table_two').delete().where({ name: faker.name.firstName() });
+
+    await nestedTrx2.commit();
+    await nestedTrx1.commit();
+
+    await trx1.commit();
+    await trx2.commit();
+
+    const transactions = tracker.getTransactions();
+
+    expect(transactions).toEqual([
+      {
+        id: 0,
+        state: 'commited',
+        queries: [
+          expect.objectContaining({
+            sql: 'insert into "table_one" ("name") values (?)',
+          }),
+        ],
+      },
+      {
+        id: 1,
+        state: 'commited',
+        queries: [
+          expect.objectContaining({
+            sql: 'insert into "table_two" ("name") values (?)',
+          }),
+        ],
+      },
+      {
+        id: 2,
+        parent: 0,
+        state: 'commited',
+        queries: [
+          expect.objectContaining({
+            sql: 'delete from "table_one" where "name" = ?',
+          }),
+        ],
+      },
+      {
+        id: 3,
+        parent: 1,
+        state: 'commited',
+        queries: [
+          expect.objectContaining({
+            sql: 'delete from "table_two" where "name" = ?',
+          }),
+        ],
+      },
+    ]);
+  });
 });
