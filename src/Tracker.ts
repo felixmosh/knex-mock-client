@@ -126,12 +126,12 @@ export class Tracker {
   }
 
   private receiveTransactionCommand(connection: MockConnection, rawQuery: RawQuery): boolean {
-    const txId = connection.transactionStack.at(-1);
+    const txId = connection.transactionStack.peek(0);
 
     // Knex always assign a transaction ID before emiting any transaction control commands.
     if (txId === undefined) return false;
 
-    const parentTxId = connection.transactionStack.at(-2);
+    const parentTxId = connection.transactionStack.peek(1);
 
     const txState: InternalTransactionState = this.transactions.get(txId) ?? {
       originalId: txId,
@@ -169,14 +169,14 @@ export class Tracker {
         // As a workaround, we point the connection to the parent transaction by ourselves here.
         // If Knex decides to set the transaction ID when going up the stack,
         // this call just won't do anything as it is idempotent.
-        connection.pointStackTo(txState.originalParent);
+        connection.transactionStack.pointTo(txState.originalParent);
         break;
 
       case 'ROLLBACK':
         txState.state = 'rolled back';
 
         // See reasoning above.
-        connection.pointStackTo(txState.originalParent);
+        connection.transactionStack.pointTo(txState.originalParent);
         break;
     }
 
