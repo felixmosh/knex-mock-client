@@ -1,9 +1,22 @@
 import cloneDeep from 'lodash.clonedeep';
 import { FunctionQueryMatcher, QueryMatcher, RawQuery } from '../types/mock-client';
 import { queryMethods, transactionCommands } from './constants';
+import { MockConnection } from './MockConnection';
 import { isUsingFakeTimers } from './utils';
 
 export type TrackerConfig = Record<string, unknown>;
+
+export type TransactionState = {
+  id: number,
+  parent?: number,
+  state: 'ongoing' | 'commited' | 'rolled back',
+  queries: RawQuery[],
+}
+
+type InternalTransactionState = TransactionState & {
+  originalId: string,
+  originalParent?: string,
+}
 
 interface Handler<T = any> {
   data: T | ((rawQuery: RawQuery) => T);
@@ -32,19 +45,17 @@ export class Tracker {
 
   private readonly config: TrackerConfig;
   private responses = new Map<RawQuery['method'], Handler[]>();
+  private transactions = new Map<string, InternalTransactionState>();
 
   constructor(trackerConfig: TrackerConfig) {
     this.config = trackerConfig;
     this.reset();
   }
 
-  public _handle(rawQuery: RawQuery): Promise<any> {
+  public _handle(connection: MockConnection, rawQuery: RawQuery): Promise<any> {
     return new Promise((resolve, reject) => {
       setTimeout(async () => {
-        if (
-          typeof rawQuery.method === 'undefined' &&
-          transactionCommands.some((trxCommand) => rawQuery.sql.startsWith(trxCommand))
-        ) {
+        if (this.receiveTransactionCommand(connection, rawQuery)) {
           return resolve(undefined);
         }
 
@@ -90,6 +101,7 @@ export class Tracker {
   public reset() {
     this.resetHandlers();
     this.resetHistory();
+    this.resetTransactions();
   }
 
   public resetHandlers() {
@@ -98,6 +110,77 @@ export class Tracker {
 
   public resetHistory() {
     queryMethods.forEach((method) => (this.history[method].length = 0));
+  }
+
+  public resetTransactions() {
+    this.transactions.clear();
+  }
+
+  public getTransactions(): TransactionState[] {
+    return Array.from(this.transactions.values())
+      .sort((a, b) => a.id - b.id)
+      // Hide original transaction IDs as those are not predictable within a test
+      // because they are generated from a global state within a transitive
+      // dependency of Knex.
+      .map(({originalId, originalParent, ...txState}) => txState);
+  }
+
+  private receiveTransactionCommand(connection: MockConnection, rawQuery: RawQuery): boolean {
+    const txId = connection.transactionStack.at(-1);
+
+    // Knex always assign a transaction ID before emiting any transaction control commands.
+    if (txId === undefined) return false;
+
+    const parentTxId = connection.transactionStack.at(-2);
+
+    const txState: InternalTransactionState = this.transactions.get(txId) ?? {
+      originalId: txId,
+      id: this.transactions.size,
+      state: 'ongoing',
+      queries: [],
+      ...parentTxId && {
+        originalParent: parentTxId,
+        parent: this.transactions.get(parentTxId)?.id,
+      },
+    };
+
+    const trxCommand = transactionCommands.find((trxCommand) => rawQuery.sql.startsWith(trxCommand))
+
+    if (trxCommand === undefined) {
+      txState.queries.push(rawQuery);
+
+      return false;
+    }
+
+    switch (trxCommand) {
+      case 'BEGIN;':
+      case 'SAVEPOINT':
+        this.transactions.set(txId, txState);
+        break;
+
+      case 'COMMIT;':
+      case 'RELEASE SAVEPOINT':
+        // this.transactions.set(txId, {...txState, state: 'commited'});
+        txState.state = 'commited';
+
+        // Knex only actively sets the internal transaction ID when going down a transaction.
+        // Since it keeps track of the transaction internally, there is no need to
+        // inform the connection that it is no longer running that transaction.
+        // As a workaround, we point the connection to the parent transaction by ourselves here.
+        // If Knex decides to set the transaction ID when going up the stack,
+        // this call just won't do anything as it is idempotent.
+        connection.pointStackTo(txState.originalParent);
+        break;
+
+      case 'ROLLBACK':
+        txState.state = 'rolled back';
+
+        // See reasoning above.
+        connection.pointStackTo(txState.originalParent);
+        break;
+    }
+
+    return true;
   }
 
   private prepareMatcher(rawQueryMatcher: QueryMatcher): Handler['match'] {

@@ -6,4 +6,4 @@ export const transactionCommands = [
   'ROLLBACK',
   'SAVEPOINT',
   'RELEASE SAVEPOINT',
-];
+] as const;

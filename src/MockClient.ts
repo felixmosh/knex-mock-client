@@ -1,5 +1,6 @@
 import knex, { Knex } from 'knex';
 import { RawQuery } from '../types/mock-client';
+import { MockConnection } from './MockConnection';
 import { Tracker, TrackerConfig } from './Tracker';
 
 export class MockClient extends knex.Client {
@@ -16,17 +17,8 @@ export class MockClient extends knex.Client {
     }
   }
 
-  public acquireConnection() {
-    return Promise.resolve({
-      __knexUid: 1,
-      fakeConnection: true,
-      beginTransaction(cb: () => void) {
-        cb();
-      },
-      commitTransaction(cb: () => void) {
-        cb();
-      },
-    });
+  public acquireConnection(): Promise<MockConnection> {
+    return Promise.resolve(new MockConnection());
   }
 
   public releaseConnection() {
@@ -37,7 +29,7 @@ export class MockClient extends knex.Client {
     return response;
   }
 
-  public _query(_connection: any, rawQuery: RawQuery) {
+  public _query(connection: MockConnection, rawQuery: RawQuery) {
     let method: RawQuery['method'] = rawQuery.method;
 
     const rawMethod = rawQuery.method as RawQuery['method'] | 'del' | 'first' | 'pluck' | 'raw';
@@ -55,7 +47,7 @@ export class MockClient extends knex.Client {
         break;
     }
 
-    return MockClient.tracker._handle({ ...rawQuery, method });
+    return MockClient.tracker._handle(connection, { ...rawQuery, method });
   }
 
   private _attachDialectQueryCompiler(config: Knex.Config<any> & { mockClient: TrackerConfig }) {
