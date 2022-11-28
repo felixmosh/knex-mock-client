@@ -148,6 +148,16 @@ describe('mock Select statement', () => {
     });
   });
 
+  it('should allow to simulate error with object', async () => {
+    const error = new Error('connection error');
+    tracker.on
+      .select((rawQuery) => rawQuery.method === 'select' && rawQuery.sql.includes('table_name'))
+      .simulateError(error);
+
+    await expect(db('table_name')).rejects.toBe(error);
+    await expect(db('table_name')).rejects.toBe(error);
+  });
+
   it('should allow to simulate error once', async () => {
     tracker.on
       .select((rawQuery) => rawQuery.method === 'select' && rawQuery.sql.includes('table_name'))
