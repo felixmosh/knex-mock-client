@@ -139,6 +139,16 @@ describe('mock Insert statement', () => {
     );
   });
 
+  it('should allow to simulate error with object', async () => {
+    const error = new Error('connection error');
+    tracker.on
+      .insert((rawQuery) => rawQuery.method === 'insert' && rawQuery.sql.includes('table_name'))
+      .simulateError(error);
+
+    await expect(db('table_name').insert([{ name: faker.name.firstName() }])).rejects.toBe(error);
+    await expect(db('table_name').insert([{ name: faker.name.firstName() }])).rejects.toBe(error);
+  });
+
   it('should allow to simulate error once', async () => {
     tracker.on
       .insert((rawQuery) => rawQuery.method === 'insert' && rawQuery.sql.includes('table_name'))

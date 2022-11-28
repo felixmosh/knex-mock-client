@@ -140,6 +140,16 @@ describe('mock Update statement', () => {
     );
   });
 
+  it('should allow to simulate error with object', async () => {
+    const error = new Error('connection error');
+    tracker.on
+      .update((rawQuery) => rawQuery.method === 'update' && rawQuery.sql.includes('table_name'))
+      .simulateError(error);
+
+    await expect(db('table_name').update([{ name: faker.name.firstName() }])).rejects.toBe(error);
+    await expect(db('table_name').update([{ name: faker.name.firstName() }])).rejects.toBe(error);
+  });
+
   it('should allow to simulate error once', async () => {
     tracker.on
       .update((rawQuery) => rawQuery.method === 'update' && rawQuery.sql.includes('table_name'))

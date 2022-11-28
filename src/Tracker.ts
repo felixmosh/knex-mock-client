@@ -16,15 +16,15 @@ export type TransactionState = {
 interface Handler<T = any> {
   data: T | ((rawQuery: RawQuery) => T);
   match: FunctionQueryMatcher;
-  errorMessage?: string;
+  error?: string | Error;
   once?: true;
 }
 
 type ResponseTypes = {
   response: <T = any>(data: Handler<T>['data']) => Tracker;
   responseOnce: <T = any>(data: Handler<T>['data']) => Tracker;
-  simulateError: (data: Handler<any>['data']) => Tracker;
-  simulateErrorOnce: (data: Handler<any>['data']) => Tracker;
+  simulateError: (error: Handler['error']) => Tracker;
+  simulateErrorOnce: (error: Handler['error']) => Tracker;
 };
 
 type QueryMethodType = typeof queryMethods[number];
@@ -74,8 +74,8 @@ export class Tracker {
             if (handler.match(rawQuery)) {
               this.history[method].push(rawQuery);
 
-              if (handler.errorMessage) {
-                reject(new Error(handler.errorMessage));
+              if (handler.error) {
+                reject(handler.error instanceof Error ? handler.error : new Error(handler.error));
               } else {
                 const data =
                   typeof handler.data === 'function' ? await handler.data(rawQuery) : handler.data;
@@ -195,15 +195,15 @@ export class Tracker {
 
           return this;
         },
-        simulateError: (errorMessage: Handler['errorMessage']): Tracker => {
+        simulateError: (error: Handler['error']): Tracker => {
           const handlers = this.responses.get(queryMethod) || [];
-          handlers.push({ match: matcher, data: null, errorMessage });
+          handlers.push({ match: matcher, data: null, error });
 
           return this;
         },
-        simulateErrorOnce: (errorMessage: Handler['errorMessage']): Tracker => {
+        simulateErrorOnce: (error: Handler['error']): Tracker => {
           const handlers = this.responses.get(queryMethod) || [];
-          handlers.push({ match: matcher, data: null, once: true, errorMessage });
+          handlers.push({ match: matcher, data: null, once: true, error });
 
           return this;
         },

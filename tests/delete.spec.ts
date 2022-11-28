@@ -132,6 +132,16 @@ describe('mock Delete statement', () => {
     await expect(db('table_name').delete().where('id', 1)).rejects.toMatchObject({
       message: expect.stringContaining('connection error'),
     });
+  })
+
+  it('should allow to simulate error with object', async () => {
+    const error = new Error('connection error');
+    tracker.on
+      .any((rawQuery) => rawQuery.method === 'delete' && rawQuery.sql.includes('table_name'))
+      .simulateError(error);
+
+    await expect(db('table_name').delete().where('id', 1)).rejects.toBe(error);
+    await expect(db('table_name').delete().where('id', 1)).rejects.toBe(error);
   });
 
   it('should allow to simulate error once', async () => {
