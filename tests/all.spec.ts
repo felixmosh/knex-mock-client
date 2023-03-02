@@ -1,5 +1,5 @@
 import knex, { Knex } from 'knex';
-import { getTracker, MockClient, Tracker } from '../src';
+import { createTracker, MockClient, Tracker } from '../src';
 
 describe('store all history', () => {
   let db: Knex;
@@ -9,7 +9,7 @@ describe('store all history', () => {
     db = knex({
       client: MockClient,
     });
-    tracker = getTracker();
+    tracker = createTracker(db);
   });
 
   afterEach(() => {

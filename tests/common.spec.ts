@@ -1,13 +1,9 @@
 import { faker } from '@faker-js/faker';
 import knex, { Knex } from 'knex';
-import { getTracker, MockClient, Tracker } from '../src';
+import { createTracker, MockClient, Tracker } from '../src';
 import { queryMethods } from '../src/constants';
 
 describe('common behaviour', () => {
-  it('should errorMessage error when accessing tracker before initialization', async () => {
-    expect(getTracker).toThrowError('Trying to access tracker before knex initialized');
-  });
-
   describe('with db initialized', () => {
     let db: Knex;
     let tracker: Tracker;
@@ -22,7 +18,7 @@ describe('common behaviour', () => {
           database: 'DBNAME',
         },
       });
-      tracker = getTracker();
+      tracker = createTracker(db);
     });
 
     afterEach(() => {
@@ -68,7 +64,7 @@ describe('common behaviour', () => {
       db = knex({
         client: MockClient,
       });
-      tracker = getTracker();
+      tracker = createTracker(db);
     });
 
     it('should support jest fake timers', async () => {

@@ -7,10 +7,10 @@ import { isUsingFakeTimers } from './utils';
 export type TrackerConfig = Record<string, unknown>;
 
 export type TransactionState = {
-  id: number,
-  parent?: number,
-  state: 'ongoing' | 'committed' | 'rolled back',
-  queries: RawQuery[],
+  id: number;
+  parent?: number;
+  state: 'ongoing' | 'committed' | 'rolled back';
+  queries: RawQuery[];
 };
 
 interface Handler<T = any> {
@@ -30,15 +30,16 @@ type ResponseTypes = {
 type QueryMethodType = typeof queryMethods[number];
 
 type History = Record<QueryMethodType, RawQuery[]> & {
-  transactions: TransactionState[],
-  all: RawQuery[],
+  transactions: TransactionState[];
+  all: RawQuery[];
 };
 
 export class Tracker {
   public readonly history: History = {
-    ...Object.fromEntries(
-      queryMethods.map((method) => [method, [] as RawQuery[]])
-    ) as Record<QueryMethodType, RawQuery[]>,
+    ...(Object.fromEntries(queryMethods.map((method) => [method, [] as RawQuery[]])) as Record<
+      QueryMethodType,
+      RawQuery[]
+    >),
     transactions: [],
     all: [],
   };
@@ -121,11 +122,12 @@ export class Tracker {
   private receiveTransactionCommand(connection: MockConnection, rawQuery: RawQuery): boolean {
     const txId = connection.transactionStack.peek(0);
 
-    const txState: TransactionState | undefined = txId === undefined
-      ? undefined
-      : this.history.transactions[txId];
+    const txState: TransactionState | undefined =
+      txId === undefined ? undefined : this.history.transactions[txId];
 
-    const trxCommand = transactionCommands.find((trxCommand) => rawQuery.sql.startsWith(trxCommand))
+    const trxCommand = transactionCommands.find((trxCommand) =>
+      rawQuery.sql.startsWith(trxCommand)
+    );
 
     switch (trxCommand) {
       case 'BEGIN;':
@@ -134,7 +136,7 @@ export class Tracker {
           id: this.history.transactions.length,
           state: 'ongoing',
           queries: [],
-          ...txId !== undefined && { parent: txId },
+          ...(txId !== undefined && { parent: txId }),
         };
 
         this.history.transactions.push(newTxState);
