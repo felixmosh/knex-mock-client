@@ -44,8 +44,10 @@ export class MockClient extends knex.Client {
         break;
     }
 
-    if ('tracker' in this.config) {
-      return (this.config.tracker as Tracker)._handle(connection, { ...rawQuery, method });
+    // @ts-ignore (since tracker is not on the original interface)
+    const tracker = this.config.tracker as Tracker;
+    if (tracker) {
+      return tracker._handle(connection, { ...rawQuery, method });
     }
     throw new Error('Tracker not configured for knex mock client');
   }
