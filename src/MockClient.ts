@@ -1,12 +1,12 @@
 import knex, { Knex } from 'knex';
 import { RawQuery } from '../types/mock-client';
 import { MockConnection } from './MockConnection';
-import { Tracker, TrackerConfig } from './Tracker';
+import { Tracker } from './Tracker';
 
 export class MockClient extends knex.Client {
   public readonly isMock = true;
 
-  constructor(config: Knex.Config & { mockClient: TrackerConfig }) {
+  constructor(config: Knex.Config) {
     super(config);
 
     if (config.dialect) {
@@ -24,6 +24,12 @@ export class MockClient extends knex.Client {
 
   public processResponse(response: any) {
     return response;
+  }
+
+  public setTracker(tracker: Tracker) {
+    // driver is copied by `makeTxClient` when using a transaction
+    this.driver = this.driver || {};
+    this.driver.tracker = tracker;
   }
 
   public _query(connection: MockConnection, rawQuery: RawQuery) {
@@ -44,15 +50,15 @@ export class MockClient extends knex.Client {
         break;
     }
 
-    // @ts-ignore (since tracker is not on the original interface)
-    const tracker = this.config.tracker as Tracker;
-    if (tracker) {
-      return tracker._handle(connection, { ...rawQuery, method });
+    const tracker: Tracker = this.driver?.tracker;
+    if (!tracker) {
+      throw new Error('Tracker not configured for knex mock client');
     }
-    throw new Error('Tracker not configured for knex mock client');
+
+    return tracker._handle(connection, { ...rawQuery, method });
   }
 
-  private _attachDialectQueryCompiler(config: Knex.Config<any> & { mockClient: TrackerConfig }) {
+  private _attachDialectQueryCompiler(config: Knex.Config<any>) {
     const { resolveClientNameWithAliases } = require('knex/lib/util/helpers');
     const { SUPPORTED_CLIENTS } = require('knex/lib/constants');
 

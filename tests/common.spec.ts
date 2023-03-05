@@ -4,6 +4,31 @@ import { createTracker, MockClient, Tracker } from '../src';
 import { queryMethods } from '../src/constants';
 
 describe('common behaviour', () => {
+  it('should throw error when querying without tracker initialization', async () => {
+    const db = knex({
+      client: MockClient,
+    });
+
+    await expect(db('table_name').where('id', 1)).rejects.toThrowError(
+      'Tracker not configured for knex mock client'
+    );
+  });
+
+  it('should support concurrent tests by having different tracker', () => {
+    const db1 = knex({
+      client: MockClient,
+    });
+
+    const db2 = knex({
+      client: MockClient,
+    });
+
+    createTracker(db1);
+    createTracker(db2);
+
+    expect(db1.client.driver.tracker).not.toBe(db2.client.driver.tracker);
+  });
+
   describe('with db initialized', () => {
     let db: Knex;
     let tracker: Tracker;
