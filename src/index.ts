@@ -1,14 +1,12 @@
-import { MockClient } from './MockClient';
-import { Tracker } from './Tracker';
+import { Knex } from 'knex';
+import { Tracker, TrackerConfig } from './Tracker';
 
 export { MockClient } from './MockClient';
-export type { Tracker } from './Tracker';
+export { Tracker } from './Tracker';
 export type { RawQuery, QueryMatcher, FunctionQueryMatcher } from '../types/mock-client';
 
-export function getTracker(): Tracker {
-  if (!MockClient.tracker) {
-    throw new Error('Trying to access tracker before knex initialized');
-  }
-
-  return MockClient.tracker;
+export function createTracker(db: Knex, trackerConfig: TrackerConfig = {}): Tracker {
+  const tracker = new Tracker(trackerConfig);
+  db.client.config.tracker = tracker;
+  return tracker;
 }

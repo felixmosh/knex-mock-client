@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import knex, { Knex } from 'knex';
-import { getTracker, MockClient, Tracker } from '../src';
+import { createTracker, MockClient, Tracker } from '../src';
 
 describe('specific dialect', () => {
   let db: Knex;
@@ -12,7 +12,7 @@ describe('specific dialect', () => {
         client: MockClient,
         dialect: 'pg',
       });
-      tracker = getTracker();
+      tracker = createTracker(db);
     });
 
     afterEach(() => {
@@ -78,7 +78,7 @@ describe('specific dialect', () => {
         client: MockClient,
         dialect: 'mysql',
       });
-      tracker = getTracker();
+      tracker = createTracker(db);
     });
 
     afterEach(() => {
@@ -101,7 +101,7 @@ describe('specific dialect', () => {
         client: MockClient,
         dialect: 'mssql',
       });
-      tracker = getTracker();
+      tracker = createTracker(db);
     });
 
     afterEach(() => {

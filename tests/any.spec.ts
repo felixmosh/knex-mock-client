@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import knex, { Knex } from 'knex';
-import { getTracker, MockClient, Tracker } from '../src';
+import { createTracker, MockClient, Tracker } from '../src';
 
 describe('mock any statement', () => {
   let db: Knex;
@@ -10,7 +10,7 @@ describe('mock any statement', () => {
     db = knex({
       client: MockClient,
     });
-    tracker = getTracker();
+    tracker = createTracker(db);
   });
 
   afterEach(() => {
@@ -135,7 +135,7 @@ describe('mock any statement', () => {
     await expect(db('table_name').delete().where('id', 1)).rejects.toMatchObject({
       message: expect.stringContaining(errorMessage),
     });
-  })
+  });
 
   it('should allow to simulate error with object', async () => {
     const error = new Error('connection error');

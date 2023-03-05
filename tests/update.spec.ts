@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import knex, { Knex } from 'knex';
-import { getTracker, MockClient, Tracker } from '../src';
+import { createTracker, MockClient, Tracker } from '../src';
 
 describe('mock Update statement', () => {
   let db: Knex;
@@ -10,7 +10,7 @@ describe('mock Update statement', () => {
     db = knex({
       client: MockClient,
     });
-    tracker = getTracker();
+    tracker = createTracker(db);
   });
 
   afterEach(() => {

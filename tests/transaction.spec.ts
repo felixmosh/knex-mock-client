@@ -1,23 +1,14 @@
 import { faker } from '@faker-js/faker';
-import knex, { Knex } from 'knex';
-import { getTracker, MockClient, Tracker } from '../src';
+import knex from 'knex';
+import { MockClient, createTracker } from '../src';
 
 describe('transaction', () => {
-  let db: Knex;
-  let tracker: Tracker;
-
-  beforeAll(() => {
-    db = knex({
+  it('should support transactions', async () => {
+    const db = knex({
       client: MockClient,
     });
-    tracker = getTracker();
-  });
+    const tracker = createTracker(db);
 
-  afterEach(() => {
-    tracker.reset();
-  });
-
-  it('should support transactions', async () => {
     tracker.on.insert('table_name').responseOnce(1);
     tracker.on.delete('table_name').responseOnce(1);
     tracker.on.select('foo').responseOnce([]);
@@ -30,21 +21,28 @@ describe('transaction', () => {
     expect(tracker.history.insert).toHaveLength(1);
     expect(tracker.history.delete).toHaveLength(1);
 
-    expect(tracker.history.transactions).toEqual([{
-      id: 0,
-      state: 'committed',
-      queries: [
-        expect.objectContaining({
-          method: 'insert',
-        }),
-        expect.objectContaining({
-          method: 'delete',
-        }),
-      ],
-    }]);
+    expect(tracker.history.transactions).toEqual([
+      {
+        id: 0,
+        state: 'committed',
+        queries: [
+          expect.objectContaining({
+            method: 'insert',
+          }),
+          expect.objectContaining({
+            method: 'delete',
+          }),
+        ],
+      },
+    ]);
   });
 
   it('should support transactions with rollback', async () => {
+    const db = knex({
+      client: MockClient,
+    });
+    const tracker = createTracker(db);
+
     tracker.on.insert('table_name').responseOnce(1);
     tracker.on.delete('table_name').responseOnce(1);
 
@@ -61,21 +59,28 @@ describe('transaction', () => {
     expect(tracker.history.insert).toHaveLength(1);
     expect(tracker.history.delete).toHaveLength(1);
 
-    expect(tracker.history.transactions).toEqual([{
-      id: 0,
-      state: 'rolled back',
-      queries: [
-        expect.objectContaining({
-          method: 'insert',
-        }),
-        expect.objectContaining({
-          method: 'delete',
-        }),
-      ],
-    }]);
+    expect(tracker.history.transactions).toEqual([
+      {
+        id: 0,
+        state: 'rolled back',
+        queries: [
+          expect.objectContaining({
+            method: 'insert',
+          }),
+          expect.objectContaining({
+            method: 'delete',
+          }),
+        ],
+      },
+    ]);
   });
 
   it('should support nested transactions', async () => {
+    const db = knex({
+      client: MockClient,
+    });
+    const tracker = createTracker(db);
+
     tracker.on.insert('table_name').responseOnce(1);
     tracker.on.delete('table_name').responseOnce(1);
     tracker.on.select('table_name').responseOnce([]);
@@ -133,6 +138,11 @@ describe('transaction', () => {
   });
 
   it('should support transactions with commit', async () => {
+    const db = knex({
+      client: MockClient,
+    });
+    const tracker = createTracker(db);
+
     tracker.on.insert('table_name').responseOnce(1);
     tracker.on.delete('table_name').responseOnce(1);
 
@@ -144,21 +154,28 @@ describe('transaction', () => {
     expect(tracker.history.insert).toHaveLength(1);
     expect(tracker.history.delete).toHaveLength(1);
 
-    expect(tracker.history.transactions).toEqual([{
-      id: 0,
-      state: 'committed',
-      queries: [
-        expect.objectContaining({
-          method: 'insert',
-        }),
-        expect.objectContaining({
-          method: 'delete',
-        }),
-      ],
-    }]);
+    expect(tracker.history.transactions).toEqual([
+      {
+        id: 0,
+        state: 'committed',
+        queries: [
+          expect.objectContaining({
+            method: 'insert',
+          }),
+          expect.objectContaining({
+            method: 'delete',
+          }),
+        ],
+      },
+    ]);
   });
 
   it('should keep track of interleaving transactions', async () => {
+    const db = knex({
+      client: MockClient,
+    });
+    const tracker = createTracker(db);
+
     tracker.on.any(/.*/).response(1);
 
     const trx1 = await db.transaction();
