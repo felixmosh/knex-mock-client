@@ -4,6 +4,16 @@ import { createTracker, MockClient, Tracker } from '../src';
 import { queryMethods } from '../src/constants';
 
 describe('common behaviour', () => {
+  it('should throw error when querying without tracker initialization', async () => {
+    const db = knex({
+      client: MockClient,
+    });
+
+    await expect(db('table_name').where('id', 1)).rejects.toThrowError(
+      'Tracker not configured for knex mock client'
+    );
+  });
+
   describe('with db initialized', () => {
     let db: Knex;
     let tracker: Tracker;
