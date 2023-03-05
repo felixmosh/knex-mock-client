@@ -4,8 +4,6 @@ import { queryMethods, transactionCommands } from './constants';
 import { MockConnection } from './MockConnection';
 import { isUsingFakeTimers } from './utils';
 
-export type TrackerConfig = Record<string, unknown>;
-
 export type TransactionState = {
   id: number;
   parent?: number;
@@ -48,11 +46,9 @@ export class Tracker {
     queryMethods.map((method) => [method, this.prepareStatement(method)])
   ) as Record<QueryMethodType, (rawQueryMatcher: QueryMatcher) => ResponseTypes>;
 
-  private readonly config: TrackerConfig;
   private responses = new Map<RawQuery['method'], Handler[]>();
 
-  constructor(trackerConfig: TrackerConfig) {
-    this.config = trackerConfig;
+  constructor() {
     this.reset();
   }
 

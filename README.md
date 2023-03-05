@@ -40,41 +40,41 @@ export async function addUser(user: User): Promise<{ id }> {
 import { expect } from '@jest/globals';
 import { createTracker, MockClient } from 'knex-mock-client';
 import { faker } from '@faker-js/faker';
-import { db } from "../common/db-setup";
+import { db } from '../common/db-setup';
 
-jest.mock("../common/db-setup", () => {
-  const knex = require("knex");
-  return {
-    db: knex({ client: MockClient }),
-  };
+jest.mock('../common/db-setup', () => {
+   const knex = require('knex');
+   return {
+      db: knex({ client: MockClient }),
+   };
 });
 
 describe('my-cool-controller tests', () => {
-  let tracker: Tracker;
+   let tracker: Tracker;
 
-  beforeAll(() => {
-    tracker = createTracker(db);
-  });
+   beforeAll(() => {
+      tracker = createTracker(db);
+   });
 
-  afterEach(() => {
-    tracker.reset();
-  });
+   afterEach(() => {
+      tracker.reset();
+   });
 
-  it('should add new user', async () => {
-    const insertId = faker.datatype.number();
-    tracker.on.insert('users').response([insertId]);
-    
-    const newUser = { name: 'foo bar', email: 'test@test.com' };
-    const data = await addUser(newUser);
+   it('should add new user', async () => {
+      const insertId = faker.datatype.number();
+      tracker.on.insert('users').response([insertId]);
 
-    expect(data.id).toEqual(insertId);
+      const newUser = { name: 'foo bar', email: 'test@test.com' };
+      const data = await addUser(newUser);
 
-    const insertHistory = tracker.history.insert;
+      expect(data.id).toEqual(insertId);
 
-    expect(insertHistory).toHaveLength(1);
-    expect(insertHistory[0].method).toEqual('insert');
-    expect(insertHistory[0].bindings).toEqual([newUser.name, newUser.email]);
-  });
+      const insertHistory = tracker.history.insert;
+
+      expect(insertHistory).toHaveLength(1);
+      expect(insertHistory[0].method).toEqual('insert');
+      expect(insertHistory[0].bindings).toEqual([newUser.name, newUser.email]);
+   });
 });
 ```
 

@@ -1,14 +1,23 @@
 import { faker } from '@faker-js/faker';
-import knex from 'knex';
-import { MockClient, createTracker } from '../src';
+import knex, { Knex } from 'knex';
+import { createTracker, MockClient, Tracker } from '../src';
 
 describe('transaction', () => {
-  it('should support transactions', async () => {
-    const db = knex({
+  let db: Knex;
+  let tracker: Tracker;
+
+  beforeAll(() => {
+    db = knex({
       client: MockClient,
     });
-    const tracker = createTracker(db);
+    tracker = createTracker(db);
+  });
 
+  afterEach(() => {
+    tracker.reset();
+  });
+
+  it('should support transactions', async () => {
     tracker.on.insert('table_name').responseOnce(1);
     tracker.on.delete('table_name').responseOnce(1);
     tracker.on.select('foo').responseOnce([]);
@@ -38,11 +47,6 @@ describe('transaction', () => {
   });
 
   it('should support transactions with rollback', async () => {
-    const db = knex({
-      client: MockClient,
-    });
-    const tracker = createTracker(db);
-
     tracker.on.insert('table_name').responseOnce(1);
     tracker.on.delete('table_name').responseOnce(1);
 
@@ -76,11 +80,6 @@ describe('transaction', () => {
   });
 
   it('should support nested transactions', async () => {
-    const db = knex({
-      client: MockClient,
-    });
-    const tracker = createTracker(db);
-
     tracker.on.insert('table_name').responseOnce(1);
     tracker.on.delete('table_name').responseOnce(1);
     tracker.on.select('table_name').responseOnce([]);
@@ -138,11 +137,6 @@ describe('transaction', () => {
   });
 
   it('should support transactions with commit', async () => {
-    const db = knex({
-      client: MockClient,
-    });
-    const tracker = createTracker(db);
-
     tracker.on.insert('table_name').responseOnce(1);
     tracker.on.delete('table_name').responseOnce(1);
 
@@ -171,11 +165,6 @@ describe('transaction', () => {
   });
 
   it('should keep track of interleaving transactions', async () => {
-    const db = knex({
-      client: MockClient,
-    });
-    const tracker = createTracker(db);
-
     tracker.on.any(/.*/).response(1);
 
     const trx1 = await db.transaction();
