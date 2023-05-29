@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/knex-mock-client.svg)](https://www.npmjs.com/package/knex-mock-client)
 [![CI](https://github.com/felixmosh/knex-mock-client/actions/workflows/main.yml/badge.svg)](https://github.com/felixmosh/knex-mock-client/actions/workflows/main.yml)
 
-A mock client for [Knex](https://github.com/knex/knex) which allows you to write tests with DB
+A mock client for [Knex](https://github.com/knex/knex) which allows you to write unit tests with DB
 interactions with a breeze.
 
 ## Installation
