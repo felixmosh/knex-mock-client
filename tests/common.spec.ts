@@ -53,7 +53,7 @@ describe('common behaviour', () => {
     queryMethods.forEach((method) => {
       describe(method, () => {
         it(`should errorMessage error when given invalid matcher`, async () => {
-          const givenData = [{ id: faker.datatype.number() }];
+          const givenData = [{ id: faker.number.int() }];
           expect(() => tracker.on[method](null as any).response(givenData)).toThrowError(
             'Given invalid query matcher'
           );
@@ -68,7 +68,7 @@ describe('common behaviour', () => {
         });
 
         it(`should reject when no match found`, async () => {
-          const givenData = [{ id: faker.datatype.number() }];
+          const givenData = [{ id: faker.number.int() }];
           tracker.on[method]('wrong_name').response(givenData);
 
           await expect(db('table_name')).rejects.toMatchObject({
@@ -93,7 +93,7 @@ describe('common behaviour', () => {
     });
 
     it('should support jest fake timers', async () => {
-      const affectedRows = faker.datatype.number();
+      const affectedRows = faker.number.int();
       tracker.on.select('table_name').response(affectedRows);
 
       const data = await db('table_name').where('id', 1);

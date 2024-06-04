@@ -18,53 +18,53 @@ describe('mock Insert statement', () => {
   });
 
   it('should allow to mock insert query using string matcher', async () => {
-    const insertId = [faker.datatype.number()];
+    const insertId = [faker.number.int()];
     tracker.on.insert('table_name').response(insertId);
 
-    const data = await db('table_name').insert([{ name: faker.name.firstName() }]);
+    const data = await db('table_name').insert([{ name: faker.person.firstName() }]);
 
     expect(data).toEqual(insertId);
   });
 
   it('should allow to mock insert query using regex matcher', async () => {
-    const insertId = [faker.datatype.number()];
+    const insertId = [faker.number.int()];
     tracker.on.insert(/table_name/).response(insertId);
 
-    const data = await db('table_name').insert([{ name: faker.name.firstName() }]);
+    const data = await db('table_name').insert([{ name: faker.person.firstName() }]);
 
     expect(data).toEqual(insertId);
   });
 
   it('should allow to mock insert query using custom matcher', async () => {
-    const insertId = [faker.datatype.number()];
+    const insertId = [faker.number.int()];
     tracker.on
       .insert((rawQuery) => rawQuery.method === 'insert' && rawQuery.sql.includes('table_name'))
       .response(insertId);
 
-    const data = await db('table_name').insert([{ name: faker.name.firstName() }]);
+    const data = await db('table_name').insert([{ name: faker.person.firstName() }]);
 
     expect(data).toEqual(insertId);
   });
 
   it('should return a deep clone of the data', async () => {
-    const insertId = [faker.datatype.number()];
+    const insertId = [faker.number.int()];
 
     tracker.on
       .insert((rawQuery) => rawQuery.method === 'insert' && rawQuery.sql.includes('table_name'))
       .response(insertId);
 
-    const data = await db('table_name').insert([{ name: faker.name.firstName() }]);
+    const data = await db('table_name').insert([{ name: faker.person.firstName() }]);
 
     expect(data).toEqual(insertId);
   });
 
   it('should allow to query the same handler multiple times', async () => {
-    const insertId = [faker.datatype.number()];
+    const insertId = [faker.number.int()];
 
     tracker.on.insert('table_name').response(insertId);
 
-    const data = await db('table_name').insert([{ name: faker.name.firstName() }]);
-    const data2 = await db('table_name').insert([{ name: faker.name.firstName() }]);
+    const data = await db('table_name').insert([{ name: faker.person.firstName() }]);
+    const data2 = await db('table_name').insert([{ name: faker.person.firstName() }]);
 
     expect(data).toEqual(insertId);
     expect(data2).toEqual(insertId);
@@ -72,47 +72,47 @@ describe('mock Insert statement', () => {
   });
 
   it('should allow to reset handlers', async () => {
-    let insertId = [faker.datatype.number()];
+    let insertId = [faker.number.int()];
 
     tracker.on.insert('table_name').response(insertId);
 
-    const data = await db('table_name').insert([{ name: faker.name.firstName() }]);
+    const data = await db('table_name').insert([{ name: faker.person.firstName() }]);
 
     expect(data).toEqual(insertId);
 
     tracker.resetHandlers();
 
-    insertId = [faker.datatype.number()];
+    insertId = [faker.number.int()];
 
     tracker.on.insert('table_name').response(insertId);
 
-    const data2 = await db('table_name').insert([{ name: faker.name.firstName() }]);
+    const data2 = await db('table_name').insert([{ name: faker.person.firstName() }]);
     expect(data2).toEqual(insertId);
   });
 
   it('should allow to mock insert query once', async () => {
-    const insertId = [faker.datatype.number()];
+    const insertId = [faker.number.int()];
     tracker.on
       .insert((rawQuery) => rawQuery.method === 'insert' && rawQuery.sql.includes('table_name'))
       .responseOnce(insertId);
 
-    const data = await db('table_name').insert([{ name: faker.name.firstName() }]);
+    const data = await db('table_name').insert([{ name: faker.person.firstName() }]);
 
     expect(data).toEqual(insertId);
 
-    await expect(db('table_name').insert([{ name: faker.name.firstName() }])).rejects.toMatchObject(
-      { message: expect.stringContaining('Mock handler not found') }
-    );
+    await expect(
+      db('table_name').insert([{ name: faker.person.firstName() }])
+    ).rejects.toMatchObject({ message: expect.stringContaining('Mock handler not found') });
   });
 
   it('should collect call history by method', async () => {
-    const insertId = [faker.datatype.number()];
+    const insertId = [faker.number.int()];
 
     tracker.on
       .insert((rawQuery) => rawQuery.method === 'insert' && rawQuery.sql.includes('table_name'))
       .response(insertId);
 
-    const insertData = [{ name: faker.name.firstName() }, { name: faker.name.firstName() }];
+    const insertData = [{ name: faker.person.firstName() }, { name: faker.person.firstName() }];
     await db('table_name').insert(insertData[0]);
     await db('table_name').insert(insertData[1]);
 
@@ -126,17 +126,17 @@ describe('mock Insert statement', () => {
       .insert((rawQuery) => rawQuery.method === 'insert' && rawQuery.sql.includes('table_name'))
       .simulateError('connection error');
 
-    await expect(db('table_name').insert([{ name: faker.name.firstName() }])).rejects.toMatchObject(
-      {
-        message: expect.stringContaining('connection error'),
-      }
-    );
+    await expect(
+      db('table_name').insert([{ name: faker.person.firstName() }])
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('connection error'),
+    });
 
-    await expect(db('table_name').insert([{ name: faker.name.firstName() }])).rejects.toMatchObject(
-      {
-        message: expect.stringContaining('connection error'),
-      }
-    );
+    await expect(
+      db('table_name').insert([{ name: faker.person.firstName() }])
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('connection error'),
+    });
   });
 
   it('should allow to simulate error with object', async () => {
@@ -145,8 +145,8 @@ describe('mock Insert statement', () => {
       .insert((rawQuery) => rawQuery.method === 'insert' && rawQuery.sql.includes('table_name'))
       .simulateError(error);
 
-    await expect(db('table_name').insert([{ name: faker.name.firstName() }])).rejects.toBe(error);
-    await expect(db('table_name').insert([{ name: faker.name.firstName() }])).rejects.toBe(error);
+    await expect(db('table_name').insert([{ name: faker.person.firstName() }])).rejects.toBe(error);
+    await expect(db('table_name').insert([{ name: faker.person.firstName() }])).rejects.toBe(error);
   });
 
   it('should allow to simulate error once', async () => {
@@ -154,26 +154,23 @@ describe('mock Insert statement', () => {
       .insert((rawQuery) => rawQuery.method === 'insert' && rawQuery.sql.includes('table_name'))
       .simulateErrorOnce('connection error');
 
-    await expect(db('table_name').insert([{ name: faker.name.firstName() }])).rejects.toMatchObject(
-      {
-        message: expect.stringContaining('connection error'),
-      }
-    );
+    await expect(
+      db('table_name').insert([{ name: faker.person.firstName() }])
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('connection error'),
+    });
 
-    await expect(db('table_name').insert([{ name: faker.name.firstName() }])).rejects.toMatchObject(
-      {
-        message: expect.stringContaining('Mock handler not found'),
-      }
-    );
+    await expect(
+      db('table_name').insert([{ name: faker.person.firstName() }])
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('Mock handler not found'),
+    });
   });
 
   it('should support `raw` insert statement', async () => {
     tracker.on.insert('table_name').response([]);
 
-    await db.raw('Insert into ?? (id) values (?)', [
-      'table_name',
-      faker.datatype.number({ min: 1 }),
-    ]);
+    await db.raw('Insert into ?? (id) values (?)', ['table_name', faker.number.int({ min: 1 })]);
 
     expect(tracker.history.insert).toHaveLength(1);
   });
@@ -181,7 +178,7 @@ describe('mock Insert statement', () => {
   it('should support response as a function', async () => {
     tracker.on.insert('table_name').response(() => 2);
 
-    const data = await db('table_name').insert({ name: faker.name.firstName() });
+    const data = await db('table_name').insert({ name: faker.person.firstName() });
 
     expect(tracker.history.insert).toHaveLength(1);
     expect(data).toEqual(2);
@@ -196,7 +193,7 @@ describe('mock Insert statement', () => {
       );
     });
 
-    const data = await db('table_name').insert({ name: faker.name.firstName() });
+    const data = await db('table_name').insert({ name: faker.person.firstName() });
 
     expect(tracker.history.insert).toHaveLength(1);
     expect(data).toEqual(3);

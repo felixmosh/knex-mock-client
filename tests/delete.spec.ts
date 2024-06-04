@@ -18,7 +18,7 @@ describe('mock Delete statement', () => {
   });
 
   it('should allow to mock delete query using string matcher', async () => {
-    const affectedRows = faker.datatype.number();
+    const affectedRows = faker.number.int();
     tracker.on.delete('table_name').response(affectedRows);
 
     const data = await db('table_name').delete().where('id', 1);
@@ -27,7 +27,7 @@ describe('mock Delete statement', () => {
   });
 
   it('should allow to mock delete query using regex matcher', async () => {
-    const affectedRows = faker.datatype.number();
+    const affectedRows = faker.number.int();
     tracker.on.delete(/table_name/).response(affectedRows);
 
     const data = await db('table_name').delete().where('id', 1);
@@ -36,7 +36,7 @@ describe('mock Delete statement', () => {
   });
 
   it('should allow to mock delete query using custom matcher', async () => {
-    const affectedRows = faker.datatype.number();
+    const affectedRows = faker.number.int();
     tracker.on
       .delete((rawQuery) => rawQuery.method === 'delete' && rawQuery.sql.includes('table_name'))
       .response(affectedRows);
@@ -47,7 +47,7 @@ describe('mock Delete statement', () => {
   });
 
   it('should return a deep clone of the data', async () => {
-    const affectedRows = faker.datatype.number();
+    const affectedRows = faker.number.int();
 
     tracker.on
       .delete((rawQuery) => rawQuery.method === 'delete' && rawQuery.sql.includes('table_name'))
@@ -59,7 +59,7 @@ describe('mock Delete statement', () => {
   });
 
   it('should allow to query the same handler multiple times', async () => {
-    const affectedRows = faker.datatype.number();
+    const affectedRows = faker.number.int();
 
     tracker.on.delete('table_name').response(affectedRows);
 
@@ -71,7 +71,7 @@ describe('mock Delete statement', () => {
   });
 
   it('should allow to reset handlers', async () => {
-    let affectedRows = faker.datatype.number();
+    let affectedRows = faker.number.int();
 
     tracker.on.delete('table_name').response(affectedRows);
 
@@ -81,7 +81,7 @@ describe('mock Delete statement', () => {
 
     tracker.resetHandlers();
 
-    affectedRows = faker.datatype.number();
+    affectedRows = faker.number.int();
 
     tracker.on.delete('table_name').response(affectedRows);
 
@@ -90,7 +90,7 @@ describe('mock Delete statement', () => {
   });
 
   it('should allow to mock delete query once', async () => {
-    const affectedRows = faker.datatype.number();
+    const affectedRows = faker.number.int();
     tracker.on
       .delete((rawQuery) => rawQuery.method === 'delete' && rawQuery.sql.includes('table_name'))
       .responseOnce(affectedRows);
@@ -105,13 +105,13 @@ describe('mock Delete statement', () => {
   });
 
   it('should collect call history by method', async () => {
-    const affectedRows = faker.datatype.number();
+    const affectedRows = faker.number.int();
 
     tracker.on
       .delete((rawQuery) => rawQuery.method === 'delete' && rawQuery.sql.includes('table_name'))
       .response(affectedRows);
 
-    const deleteIds = [faker.datatype.number({ min: 1 }), faker.datatype.number({ min: 1 })];
+    const deleteIds = [faker.number.int({ min: 1 }), faker.number.int({ min: 1 })];
     await db('table_name').delete().where('id', deleteIds[0]);
     await db('table_name').delete().where('id', deleteIds[1]);
 
@@ -161,7 +161,7 @@ describe('mock Delete statement', () => {
   it('should support `raw` delete statement', async () => {
     tracker.on.delete('table_name').response([]);
 
-    await db.raw('Delete from ?? where id=?', ['table_name', faker.datatype.number({ min: 1 })]);
+    await db.raw('Delete from ?? where id=?', ['table_name', faker.number.int({ min: 1 })]);
 
     expect(tracker.history.delete).toHaveLength(1);
   });

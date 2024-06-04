@@ -18,7 +18,7 @@ describe('mock Select statement', () => {
   });
 
   it('should allow to mock select query using string matcher', async () => {
-    const givenData = [{ id: faker.datatype.number() }];
+    const givenData = [{ id: faker.number.int() }];
     tracker.on.select('table_name').response(givenData);
 
     const data = await db('table_name');
@@ -27,7 +27,7 @@ describe('mock Select statement', () => {
   });
 
   it('should allow to mock select query using regex matcher', async () => {
-    const givenData = [{ id: faker.datatype.number() }];
+    const givenData = [{ id: faker.number.int() }];
     tracker.on.select(/table_name/).response(givenData);
 
     const data = await db('table_name');
@@ -36,7 +36,7 @@ describe('mock Select statement', () => {
   });
 
   it('should allow to mock select query using custom matcher', async () => {
-    const givenData = [{ id: faker.datatype.number() }];
+    const givenData = [{ id: faker.number.int() }];
     tracker.on
       .select((rawQuery) => rawQuery.method === 'select' && rawQuery.sql.includes('table_name'))
       .response(givenData);
@@ -47,7 +47,7 @@ describe('mock Select statement', () => {
   });
 
   it('should return a deep clone of the data', async () => {
-    const givenData = [{ id: faker.datatype.number() }];
+    const givenData = [{ id: faker.number.int() }];
     tracker.on
       .select((rawQuery) => rawQuery.method === 'select' && rawQuery.sql.includes('table_name'))
       .response(givenData);
@@ -57,7 +57,7 @@ describe('mock Select statement', () => {
   });
 
   it('should allow to query the same handler multiple times', async () => {
-    const givenData = [{ id: faker.datatype.number() }];
+    const givenData = [{ id: faker.number.int() }];
     tracker.on
       .select((rawQuery) => rawQuery.method === 'select' && rawQuery.sql.includes('table_name'))
       .response(givenData);
@@ -71,7 +71,7 @@ describe('mock Select statement', () => {
   });
 
   it('should allow to reset handlers', async () => {
-    const givenData = [{ id: faker.datatype.number() }];
+    const givenData = [{ id: faker.number.int() }];
     tracker.on
       .select((rawQuery) => rawQuery.method === 'select' && rawQuery.sql.includes('table_name'))
       .response(givenData);
@@ -81,7 +81,7 @@ describe('mock Select statement', () => {
 
     tracker.resetHandlers();
 
-    givenData.push({ id: faker.datatype.number() });
+    givenData.push({ id: faker.number.int() });
     tracker.on
       .select((rawQuery) => rawQuery.method === 'select' && rawQuery.sql.includes('table_name'))
       .response(givenData);
@@ -91,7 +91,7 @@ describe('mock Select statement', () => {
   });
 
   it('should allow to mock select query once', async () => {
-    const givenData = [{ id: faker.datatype.number() }];
+    const givenData = [{ id: faker.number.int() }];
     tracker.on
       .select((rawQuery) => rawQuery.method === 'select' && rawQuery.sql.includes('table_name'))
       .responseOnce(givenData);
@@ -105,8 +105,8 @@ describe('mock Select statement', () => {
   });
 
   it('should allow to chain mock select query', async () => {
-    const givenData = [{ id: faker.datatype.number() }];
-    const givenData2 = [{ id: faker.datatype.number() }];
+    const givenData = [{ id: faker.number.int() }];
+    const givenData2 = [{ id: faker.number.int() }];
     tracker.on
       .select((rawQuery) => rawQuery.method === 'select' && rawQuery.sql.includes('table_name'))
       .responseOnce(givenData)
@@ -119,12 +119,12 @@ describe('mock Select statement', () => {
   });
 
   it('should collect call history by method', async () => {
-    const givenData = [{ id: faker.datatype.number() }];
+    const givenData = [{ id: faker.number.int() }];
     tracker.on
       .select((rawQuery) => rawQuery.method === 'select' && rawQuery.sql.includes('table_name'))
       .response(givenData);
 
-    const ids = [faker.datatype.number({ min: 1 }), faker.datatype.number({ min: 1 })];
+    const ids = [faker.number.int({ min: 1 }), faker.number.int({ min: 1 })];
 
     await db('table_name').where('id', ids[0]);
     await db('table_name').where('id', ids[1]);
@@ -173,10 +173,7 @@ describe('mock Select statement', () => {
   });
 
   it('should support `first` query', async () => {
-    const data = [
-      { id: faker.datatype.number({ min: 1 }) },
-      { id: faker.datatype.number({ min: 1 }) },
-    ];
+    const data = [{ id: faker.number.int({ min: 1 }) }, { id: faker.number.int({ min: 1 }) }];
 
     tracker.on.select('table_name').response(data);
 
@@ -189,10 +186,7 @@ describe('mock Select statement', () => {
   });
 
   it('should support `pluck` query', async () => {
-    const data = [
-      { id: faker.datatype.number({ min: 1 }) },
-      { id: faker.datatype.number({ min: 1 }) },
-    ];
+    const data = [{ id: faker.number.int({ min: 1 }) }, { id: faker.number.int({ min: 1 }) }];
 
     tracker.on.select('table_name').response(data);
 

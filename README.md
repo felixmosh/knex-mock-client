@@ -61,7 +61,7 @@ describe('my-cool-controller tests', () => {
    });
 
    it('should add new user', async () => {
-      const insertId = faker.datatype.number();
+      const insertId = faker.number.int();
       tracker.on.insert('users').response([insertId]);
 
       const newUser = { name: 'foo bar', email: 'test@test.com' };
@@ -179,7 +179,7 @@ db = knex({
   dialect: 'pg', // can be any Knex valid dialect name.
 });
 
-const givenData = [{ id: faker.datatype.number() }];
+const givenData = [{ id: faker.number.int() }];
 tracker.on.select('table_name').response(givenData);
 
 const data = await db('table_name').distinctOn('age');

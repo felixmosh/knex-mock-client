@@ -20,7 +20,7 @@ describe('specific dialect', () => {
     });
 
     it('should allow to mock select query distinctOn', async () => {
-      const givenData = [{ id: faker.datatype.number() }];
+      const givenData = [{ id: faker.number.int() }];
       tracker.on.select('table_name').response(givenData);
 
       const data = await db('table_name').distinctOn('age');
@@ -30,7 +30,7 @@ describe('specific dialect', () => {
     });
 
     it('should allow to mock select query noWait', async () => {
-      const givenData = [{ id: faker.datatype.number() }];
+      const givenData = [{ id: faker.number.int() }];
       tracker.on.select('table_name').response(givenData);
 
       const data = await db('table_name').select('*').forUpdate().noWait();
@@ -60,10 +60,10 @@ describe('specific dialect', () => {
 
       await db.transaction(async (trx) => {
         await db('table_name')
-          .insert({ name: faker.name.firstName() })
+          .insert({ name: faker.person.firstName() })
           .returning('*')
           .transacting(trx);
-        await db('table_name').delete().where({ name: faker.name.firstName() }).transacting(trx);
+        await db('table_name').delete().where({ name: faker.person.firstName() }).transacting(trx);
       });
 
       expect(tracker.history.insert).toHaveLength(1);

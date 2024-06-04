@@ -23,8 +23,8 @@ describe('transaction', () => {
     tracker.on.select('foo').responseOnce([]);
 
     await db.transaction(async (trx) => {
-      await db('table_name').insert({ name: faker.name.firstName() }).transacting(trx);
-      await db('table_name').delete().where({ name: faker.name.firstName() }).transacting(trx);
+      await db('table_name').insert({ name: faker.person.firstName() }).transacting(trx);
+      await db('table_name').delete().where({ name: faker.person.firstName() }).transacting(trx);
     });
 
     expect(tracker.history.insert).toHaveLength(1);
@@ -52,8 +52,8 @@ describe('transaction', () => {
 
     await db
       .transaction(async (trx) => {
-        await db('table_name').insert({ name: faker.name.firstName() }).transacting(trx);
-        await db('table_name').delete().where({ name: faker.name.firstName() }).transacting(trx);
+        await db('table_name').insert({ name: faker.person.firstName() }).transacting(trx);
+        await db('table_name').delete().where({ name: faker.person.firstName() }).transacting(trx);
         throw new Error('TEST');
       })
       .catch((e) => {
@@ -85,17 +85,17 @@ describe('transaction', () => {
     tracker.on.select('table_name').responseOnce([]);
 
     await db.transaction(async (trx) => {
-      await db('table_name').insert({ name: faker.name.firstName() }).transacting(trx);
+      await db('table_name').insert({ name: faker.person.firstName() }).transacting(trx);
       await trx.transaction(async (innerTrx) => {
         await db('table_name')
           .delete()
-          .where({ name: faker.name.firstName() })
+          .where({ name: faker.person.firstName() })
           .transacting(innerTrx);
       });
       await trx.transaction(async (innerTrx) => {
         await db('table_name')
           .select()
-          .where({ name: faker.name.firstName() })
+          .where({ name: faker.person.firstName() })
           .transacting(innerTrx);
       });
     });
@@ -141,8 +141,8 @@ describe('transaction', () => {
     tracker.on.delete('table_name').responseOnce(1);
 
     const trx = await db.transaction();
-    await trx('table_name').insert({ name: faker.name.firstName() });
-    await trx('table_name').delete().where({ name: faker.name.firstName() });
+    await trx('table_name').insert({ name: faker.person.firstName() });
+    await trx('table_name').delete().where({ name: faker.person.firstName() });
     await trx.commit();
 
     expect(tracker.history.insert).toHaveLength(1);
@@ -170,14 +170,14 @@ describe('transaction', () => {
     const trx1 = await db.transaction();
     const trx2 = await db.transaction();
 
-    await trx1('table_one').insert({ name: faker.name.firstName() });
-    await trx2('table_two').insert({ name: faker.name.firstName() });
+    await trx1('table_one').insert({ name: faker.person.firstName() });
+    await trx2('table_two').insert({ name: faker.person.firstName() });
 
     const nestedTrx1 = await trx1.transaction();
     const nestedTrx2 = await trx2.transaction();
 
-    await nestedTrx2('table_two').delete().where({ name: faker.name.firstName() });
-    await nestedTrx1('table_one').delete().where({ name: faker.name.firstName() });
+    await nestedTrx2('table_two').delete().where({ name: faker.person.firstName() });
+    await nestedTrx1('table_one').delete().where({ name: faker.person.firstName() });
 
     await nestedTrx2.commit();
     await nestedTrx1.rollback();

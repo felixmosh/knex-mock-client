@@ -18,101 +18,101 @@ describe('mock Update statement', () => {
   });
 
   it('should allow to mock update query using string matcher', async () => {
-    const affectedRows = faker.datatype.number();
+    const affectedRows = faker.number.int();
     tracker.on.update('table_name').response(affectedRows);
 
-    const data = await db('table_name').update([{ name: faker.name.firstName() }]);
+    const data = await db('table_name').update([{ name: faker.person.firstName() }]);
 
     expect(data).toEqual(affectedRows);
   });
 
   it('should allow to mock update query using regex matcher', async () => {
-    const affectedRows = faker.datatype.number();
+    const affectedRows = faker.number.int();
     tracker.on.update(/table_name/).response(affectedRows);
 
-    const data = await db('table_name').update([{ name: faker.name.firstName() }]);
+    const data = await db('table_name').update([{ name: faker.person.firstName() }]);
 
     expect(data).toEqual(affectedRows);
   });
 
   it('should allow to mock update query using custom matcher', async () => {
-    const affectedRows = faker.datatype.number();
+    const affectedRows = faker.number.int();
     tracker.on
       .update((rawQuery) => rawQuery.method === 'update' && rawQuery.sql.includes('table_name'))
       .response(affectedRows);
 
-    const data = await db('table_name').update([{ name: faker.name.firstName() }]);
+    const data = await db('table_name').update([{ name: faker.person.firstName() }]);
 
     expect(data).toEqual(affectedRows);
   });
 
   it('should return a deep clone of the data', async () => {
-    const affectedRows = faker.datatype.number();
+    const affectedRows = faker.number.int();
 
     tracker.on
       .update((rawQuery) => rawQuery.method === 'update' && rawQuery.sql.includes('table_name'))
       .response(affectedRows);
 
-    const data = await db('table_name').update([{ name: faker.name.firstName() }]);
+    const data = await db('table_name').update([{ name: faker.person.firstName() }]);
 
     expect(data).toEqual(affectedRows);
   });
 
   it('should allow to query the same handler multiple times', async () => {
-    const affectedRows = faker.datatype.number();
+    const affectedRows = faker.number.int();
 
     tracker.on.update('table_name').response(affectedRows);
 
-    const data = await db('table_name').update([{ name: faker.name.firstName() }]);
-    const data2 = await db('table_name').update([{ name: faker.name.firstName() }]);
+    const data = await db('table_name').update([{ name: faker.person.firstName() }]);
+    const data2 = await db('table_name').update([{ name: faker.person.firstName() }]);
 
     expect(data).toEqual(affectedRows);
     expect(data2).toEqual(affectedRows);
   });
 
   it('should allow to reset handlers', async () => {
-    let affectedRows = faker.datatype.number();
+    let affectedRows = faker.number.int();
 
     tracker.on.update('table_name').response(affectedRows);
 
-    const data = await db('table_name').update([{ name: faker.name.firstName() }]);
+    const data = await db('table_name').update([{ name: faker.person.firstName() }]);
 
     expect(data).toEqual(affectedRows);
 
     tracker.resetHandlers();
 
-    affectedRows = faker.datatype.number();
+    affectedRows = faker.number.int();
 
     tracker.on.update('table_name').response(affectedRows);
 
-    const data2 = await db('table_name').update([{ name: faker.name.firstName() }]);
+    const data2 = await db('table_name').update([{ name: faker.person.firstName() }]);
     expect(data2).toEqual(affectedRows);
   });
 
   it('should allow to mock update query once', async () => {
-    const affectedRows = faker.datatype.number();
+    const affectedRows = faker.number.int();
 
     tracker.on
       .update((rawQuery) => rawQuery.method === 'update' && rawQuery.sql.includes('table_name'))
       .responseOnce(affectedRows);
 
-    const data = await db('table_name').update([{ name: faker.name.firstName() }]);
+    const data = await db('table_name').update([{ name: faker.person.firstName() }]);
 
     expect(data).toEqual(affectedRows);
 
-    await expect(db('table_name').update([{ name: faker.name.firstName() }])).rejects.toMatchObject(
-      { message: expect.stringContaining('Mock handler not found') }
-    );
+    await expect(
+      db('table_name').update([{ name: faker.person.firstName() }])
+    ).rejects.toMatchObject({ message: expect.stringContaining('Mock handler not found') });
   });
 
   it('should collect call history by method', async () => {
-    const affectedRows = faker.datatype.number();
+    const affectedRows = faker.number.int();
 
     tracker.on
       .update((rawQuery) => rawQuery.method === 'update' && rawQuery.sql.includes('table_name'))
       .response(affectedRows);
 
-    const names = [faker.name.firstName(), faker.name.firstName()];
+    const names = [faker.person.firstName(), faker.person.firstName()];
 
     await db('table_name').update({ name: names[0] });
     await db('table_name').update({ name: names[1] });
@@ -127,17 +127,17 @@ describe('mock Update statement', () => {
       .update((rawQuery) => rawQuery.method === 'update' && rawQuery.sql.includes('table_name'))
       .simulateError('connection error');
 
-    await expect(db('table_name').update([{ name: faker.name.firstName() }])).rejects.toMatchObject(
-      {
-        message: expect.stringContaining('connection error'),
-      }
-    );
+    await expect(
+      db('table_name').update([{ name: faker.person.firstName() }])
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('connection error'),
+    });
 
-    await expect(db('table_name').update([{ name: faker.name.firstName() }])).rejects.toMatchObject(
-      {
-        message: expect.stringContaining('connection error'),
-      }
-    );
+    await expect(
+      db('table_name').update([{ name: faker.person.firstName() }])
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('connection error'),
+    });
   });
 
   it('should allow to simulate error with object', async () => {
@@ -146,8 +146,8 @@ describe('mock Update statement', () => {
       .update((rawQuery) => rawQuery.method === 'update' && rawQuery.sql.includes('table_name'))
       .simulateError(error);
 
-    await expect(db('table_name').update([{ name: faker.name.firstName() }])).rejects.toBe(error);
-    await expect(db('table_name').update([{ name: faker.name.firstName() }])).rejects.toBe(error);
+    await expect(db('table_name').update([{ name: faker.person.firstName() }])).rejects.toBe(error);
+    await expect(db('table_name').update([{ name: faker.person.firstName() }])).rejects.toBe(error);
   });
 
   it('should allow to simulate error once', async () => {
@@ -155,17 +155,17 @@ describe('mock Update statement', () => {
       .update((rawQuery) => rawQuery.method === 'update' && rawQuery.sql.includes('table_name'))
       .simulateErrorOnce('connection error');
 
-    await expect(db('table_name').update([{ name: faker.name.firstName() }])).rejects.toMatchObject(
-      {
-        message: expect.stringContaining('connection error'),
-      }
-    );
+    await expect(
+      db('table_name').update([{ name: faker.person.firstName() }])
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('connection error'),
+    });
 
-    await expect(db('table_name').update([{ name: faker.name.firstName() }])).rejects.toMatchObject(
-      {
-        message: expect.stringContaining('Mock handler not found'),
-      }
-    );
+    await expect(
+      db('table_name').update([{ name: faker.person.firstName() }])
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('Mock handler not found'),
+    });
   });
 
   it('should support `raw` update statement', async () => {
@@ -173,8 +173,8 @@ describe('mock Update statement', () => {
 
     await db.raw('Update ?? set name=?? where id=?', [
       'table_name',
-      faker.name.firstName(),
-      faker.datatype.number({ min: 1 }),
+      faker.person.firstName(),
+      faker.number.int({ min: 1 }),
     ]);
 
     expect(tracker.history.update).toHaveLength(1);
@@ -183,7 +183,7 @@ describe('mock Update statement', () => {
   it('should support response as a function', async () => {
     tracker.on.update('table_name').response(() => 2);
 
-    const data = await db('table_name').update({ name: faker.name.firstName() });
+    const data = await db('table_name').update({ name: faker.person.firstName() });
 
     expect(tracker.history.update).toHaveLength(1);
     expect(data).toEqual(2);
@@ -198,7 +198,7 @@ describe('mock Update statement', () => {
       );
     });
 
-    const data = await db('table_name').update({ name: faker.name.firstName() });
+    const data = await db('table_name').update({ name: faker.person.firstName() });
 
     expect(tracker.history.update).toHaveLength(1);
     expect(data).toEqual(3);
