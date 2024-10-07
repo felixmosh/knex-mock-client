@@ -6,4 +6,6 @@ export const transactionCommands = [
   'ROLLBACK',
   'SAVEPOINT',
   'RELEASE SAVEPOINT',
+  'SET TRANSACTION ISOLATION LEVEL',
+  'BEGIN TRANSACTION ISOLATION LEVEL',
 ] as const;

@@ -233,4 +233,17 @@ describe('transaction', () => {
       },
     ]);
   });
+
+  it('should support transactions with an explicit isolation level', async () => {
+    tracker.on.insert('table_name').responseOnce(1);
+    tracker.on.delete('table_name').responseOnce(1);
+    tracker.on.select('foo').responseOnce([]);
+
+    const trx = await db.transaction({ isolationLevel: 'serializable' });
+
+    await db('table_name').transacting(trx).insert({ name: 'Steve' }).transacting(trx);
+    await db('table_name').transacting(trx).delete().where({ name: 'Steve' }).transacting(trx);
+
+    await trx.commit();
+  });
 });

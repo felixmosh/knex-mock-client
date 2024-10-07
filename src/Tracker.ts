@@ -25,7 +25,7 @@ type ResponseTypes = {
   simulateErrorOnce: (error: Handler['error']) => Tracker;
 };
 
-type QueryMethodType = typeof queryMethods[number];
+type QueryMethodType = (typeof queryMethods)[number];
 
 type History = Record<QueryMethodType, RawQuery[]> & {
   transactions: TransactionState[];
