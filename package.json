@@ -1,6 +1,6 @@
 {
   "name": "knex-mock-client",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "A mock client for knex which allows you to write tests with DB interactions",
   "homepage": "https://github.com/felixmosh/knex-mock-client#readme",
   "bugs": {
